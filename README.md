@@ -25,7 +25,7 @@ pip install fastapi-agentrouter
 # With Slack support
 pip install "fastapi-agentrouter[slack]"
 
-# With Discord support  
+# With Discord support
 pip install "fastapi-agentrouter[discord]"
 
 # With all integrations
@@ -43,14 +43,14 @@ class MyAgent(Agent):
     async def handle_slack(self, event: Dict[str, Any]) -> str:
         # Handle Slack events
         return f"Hello from Slack! Event: {event.get('text', '')}"
-    
+
     async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
         # Handle Discord interactions
         return {
             "type": 4,
             "data": {"content": "Hello from Discord!"}
         }
-    
+
     async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
         # Handle generic webhooks
         return AgentResponse(content="Hello from webhook!")
@@ -93,11 +93,11 @@ async def get_ai_service() -> AIService:
 class SmartAgent(Agent):
     def __init__(self, ai_service: AIService):
         self.ai_service = ai_service
-    
+
     async def handle_slack(self, event: Dict[str, Any]) -> str:
         text = event.get("text", "")
         return await self.ai_service.process(text)
-    
+
     async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
         content = interaction.get("data", {}).get("options", [{}])[0].get("value", "")
         result = await self.ai_service.process(content)
@@ -105,7 +105,7 @@ class SmartAgent(Agent):
             "type": 4,
             "data": {"content": result}
         }
-    
+
     async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
         text = data.get("message", "")
         result = await self.ai_service.process(text)
@@ -122,7 +122,7 @@ app = FastAPI()
 async def startup():
     ai_service = await get_ai_service()
     agent = SmartAgent(ai_service)
-    
+
     app.include_router(
         build_router(
             agent,

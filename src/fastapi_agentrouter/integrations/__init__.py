@@ -1,3 +1,3 @@
 """Integration modules for various platforms."""
 
-__all__ = ["slack", "discord"]
+__all__ = ["discord", "slack"]

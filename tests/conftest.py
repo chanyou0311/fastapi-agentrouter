@@ -1,17 +1,18 @@
 """Test configuration and fixtures."""
 
+from typing import Any
+from unittest.mock import AsyncMock
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from typing import Any, Dict
-from unittest.mock import AsyncMock
 
 from fastapi_agentrouter import Agent, AgentResponse, build_router
 
 
 class MockAgent(Agent):
     """Mock agent for testing."""
-    
+
     def __init__(self) -> None:
         self.handle_slack_mock = AsyncMock(return_value="Mock Slack response")
         self.handle_discord_mock = AsyncMock(
@@ -20,14 +21,14 @@ class MockAgent(Agent):
         self.handle_webhook_mock = AsyncMock(
             return_value=AgentResponse(content="Mock webhook response")
         )
-    
-    async def handle_slack(self, event: Dict[str, Any]) -> str:
+
+    async def handle_slack(self, event: dict[str, Any]) -> str:
         return await self.handle_slack_mock(event)
-    
-    async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
+
+    async def handle_discord(self, interaction: dict[str, Any]) -> dict[str, Any]:
         return await self.handle_discord_mock(interaction)
-    
-    async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
+
+    async def handle_webhook(self, data: dict[str, Any]) -> AgentResponse:
         return await self.handle_webhook_mock(data)
 
 
@@ -45,7 +46,7 @@ def test_app(mock_agent: MockAgent) -> FastAPI:
         build_router(
             mock_agent,
             slack={"signing_secret": "test_secret"},
-            discord={"public_key": "0000000000000000000000000000000000000000000000000000000000000000"},
+            discord={"public_key": "0" * 64},
             webhook=True,
         )
     )

@@ -21,13 +21,13 @@ from typing import Any, Dict
 class MyAgent(Agent):
     async def handle_slack(self, event: Dict[str, Any]) -> str:
         return f"Hello from Slack! Event: {event.get('text', '')}"
-    
+
     async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "type": 4,
             "data": {"content": "Hello from Discord!"}
         }
-    
+
     async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
         return AgentResponse(content="Hello from webhook!")
 
