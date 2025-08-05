@@ -1,0 +1,88 @@
+site_name: FastAPI AgentRouter
+site_description: AI Agent interface library for FastAPI with multi-platform support
+site_url: https://chanyou0311.github.io/fastapi-agentrouter
+repo_url: https://github.com/chanyou0311/fastapi-agentrouter
+repo_name: chanyou0311/fastapi-agentrouter
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Integrations:
+    - Slack: integrations/slack.md
+    - Discord: integrations/discord.md
+  - API Reference:
+    - Core: api/core.md
+    - Integrations: api/integrations.md
+  - Examples:
+    - Basic Usage: examples/basic.md
+    - Advanced Usage: examples/advanced.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            merge_init_into_class: true
+            show_signature_annotations: true
+            separate_signature: true
+  - autorefs
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/chanyou0311/fastapi-agentrouter
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/fastapi-agentrouter
