@@ -2,7 +2,23 @@
 
 __version__ = "0.1.0"
 
-from .core.agent import Agent, AgentResponse
-from .core.router import build_router
+from .router import (
+    AgentProtocol,
+    create_default_router,
+    create_discord_handler,
+    create_slack_handler,
+    create_webhook_handler,
+    router,
+    setup_router,
+)
 
-__all__ = ["Agent", "AgentResponse", "__version__", "build_router"]
+__all__ = [
+    "AgentProtocol",
+    "__version__",
+    "create_default_router",
+    "create_discord_handler",
+    "create_slack_handler",
+    "create_webhook_handler",
+    "router",
+    "setup_router",
+]

@@ -8,8 +8,6 @@ from urllib.parse import urlencode
 
 from fastapi.testclient import TestClient
 
-from fastapi_agentrouter.integrations.slack import verify_slack_signature
-
 
 def generate_slack_signature(signing_secret: str, timestamp: str, body: str) -> str:
     """Generate a valid Slack signature for testing."""
@@ -21,38 +19,6 @@ def generate_slack_signature(signing_secret: str, timestamp: str, body: str) -> 
         ).hexdigest()
     )
     return signature
-
-
-def test_verify_slack_signature_valid(slack_signing_secret: str):
-    """Test valid Slack signature verification."""
-    timestamp = str(int(time.time()))
-    body = '{"text": "test"}'
-    signature = generate_slack_signature(slack_signing_secret, timestamp, body)
-
-    assert verify_slack_signature(
-        slack_signing_secret, body.encode(), timestamp, signature
-    )
-
-
-def test_verify_slack_signature_invalid(slack_signing_secret: str):
-    """Test invalid Slack signature verification."""
-    timestamp = str(int(time.time()))
-    body = '{"text": "test"}'
-
-    assert not verify_slack_signature(
-        slack_signing_secret, body.encode(), timestamp, "v0=invalid_signature"
-    )
-
-
-def test_verify_slack_signature_expired(slack_signing_secret: str):
-    """Test expired Slack signature verification."""
-    old_timestamp = str(int(time.time()) - 600)  # 10 minutes ago
-    body = '{"text": "test"}'
-    signature = generate_slack_signature(slack_signing_secret, old_timestamp, body)
-
-    assert not verify_slack_signature(
-        slack_signing_secret, body.encode(), old_timestamp, signature
-    )
 
 
 def test_slack_url_verification(test_client: TestClient, slack_signing_secret: str):
@@ -83,7 +49,7 @@ def test_slack_event_handling(test_client: TestClient, slack_signing_secret: str
     body = json.dumps(
         {
             "type": "event_callback",
-            "event": {"type": "message", "text": "Hello bot"},
+            "event": {"type": "message", "text": "Hello bot", "user": "U123"},
         }
     )
     signature = generate_slack_signature(slack_signing_secret, timestamp, body)
@@ -99,7 +65,7 @@ def test_slack_event_handling(test_client: TestClient, slack_signing_secret: str
     )
 
     assert response.status_code == 200
-    assert response.text == "Mock Slack response"
+    assert "Response to: Hello bot" in response.text
 
 
 def test_slack_slash_command(test_client: TestClient, slack_signing_secret: str):
@@ -124,11 +90,15 @@ def test_slack_slash_command(test_client: TestClient, slack_signing_secret: str)
     )
 
     assert response.status_code == 200
-    assert response.text == "Mock Slack response"
+    assert "Response to: test command" in response.text
 
 
 def test_slack_invalid_signature(test_client: TestClient):
     """Test Slack request with invalid signature."""
+    import os
+
+    os.environ["SLACK_SIGNING_SECRET"] = "test_secret"
+
     response = test_client.post(
         "/agent/slack/events",
         json={"text": "test"},

@@ -1,35 +1,25 @@
 """Test configuration and fixtures."""
 
-from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import Mock
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_agentrouter import Agent, AgentResponse, build_router
+from fastapi_agentrouter import setup_router
 
 
-class MockAgent(Agent):
+class MockAgent:
     """Mock agent for testing."""
 
-    def __init__(self) -> None:
-        self.handle_slack_mock = AsyncMock(return_value="Mock Slack response")
-        self.handle_discord_mock = AsyncMock(
-            return_value={"type": 4, "data": {"content": "Mock Discord response"}}
-        )
-        self.handle_webhook_mock = AsyncMock(
-            return_value=AgentResponse(content="Mock webhook response")
-        )
+    def __init__(self):
+        self.stream_query_mock = Mock()
 
-    async def handle_slack(self, event: dict[str, Any]) -> str:
-        return await self.handle_slack_mock(event)
-
-    async def handle_discord(self, interaction: dict[str, Any]) -> dict[str, Any]:
-        return await self.handle_discord_mock(interaction)
-
-    async def handle_webhook(self, data: dict[str, Any]) -> AgentResponse:
-        return await self.handle_webhook_mock(data)
+    def stream_query(self, *, message: str, user_id=None, session_id=None):
+        """Mock stream_query method."""
+        self.stream_query_mock(message=message, user_id=user_id, session_id=session_id)
+        # Return mock events
+        yield type("Event", (), {"content": f"Response to: {message}"})()
 
 
 @pytest.fixture
@@ -39,17 +29,25 @@ def mock_agent() -> MockAgent:
 
 
 @pytest.fixture
-def test_app(mock_agent: MockAgent) -> FastAPI:
+def get_agent_factory(mock_agent: MockAgent):
+    """Factory for get_agent dependency."""
+
+    def get_agent():
+        return mock_agent
+
+    return get_agent
+
+
+@pytest.fixture
+def test_app(get_agent_factory) -> FastAPI:
     """Create a test FastAPI application."""
+    from fastapi import APIRouter, Depends
+
     app = FastAPI()
-    app.include_router(
-        build_router(
-            mock_agent,
-            slack={"signing_secret": "test_secret"},
-            discord={"public_key": "0" * 64},
-            webhook=True,
-        )
-    )
+    # Create a new router instance for testing
+    test_router = APIRouter(prefix="/agent")
+    setup_router(test_router, get_agent=get_agent_factory)
+    app.include_router(test_router, dependencies=[Depends(get_agent_factory)])
     return app
 
 
@@ -62,10 +60,18 @@ def test_client(test_app: FastAPI) -> TestClient:
 @pytest.fixture
 def slack_signing_secret() -> str:
     """Test Slack signing secret."""
+    import os
+
+    # Set environment variable for testing
+    os.environ["SLACK_SIGNING_SECRET"] = "test_secret"
     return "test_secret"
 
 
 @pytest.fixture
 def discord_public_key() -> str:
     """Test Discord public key (64 hex chars)."""
-    return "0000000000000000000000000000000000000000000000000000000000000000"
+    import os
+
+    key = "0" * 64
+    os.environ["DISCORD_PUBLIC_KEY"] = key
+    return key

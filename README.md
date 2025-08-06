@@ -35,101 +35,70 @@ pip install "fastapi-agentrouter[all]"
 ## Quick Start
 
 ```python
-from fastapi import FastAPI
-from fastapi_agentrouter import Agent, AgentResponse, build_router
-from typing import Any, Dict
+from fastapi import FastAPI, Depends
+from fastapi_agentrouter import router, setup_router
 
-class MyAgent(Agent):
-    async def handle_slack(self, event: Dict[str, Any]) -> str:
-        # Handle Slack events
-        return f"Hello from Slack! Event: {event.get('text', '')}"
+# Your agent implementation (e.g., Vertex AI ADK)
+def get_agent():
+    # Return your agent instance
+    # This could be a Vertex AI AdkApp, or any object with stream_query method
+    from vertexai.preview import reasoning_engines
+    return reasoning_engines.AdkApp(agent=your_agent)
 
-    async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
-        # Handle Discord interactions
-        return {
-            "type": 4,
-            "data": {"content": "Hello from Discord!"}
-        }
-
-    async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
-        # Handle generic webhooks
-        return AgentResponse(content="Hello from webhook!")
-
-# Create FastAPI app
 app = FastAPI()
 
-# Create your agent
-agent = MyAgent()
-
-# Add agent router to your app
-app.include_router(
-    build_router(
-        agent,
-        slack={"signing_secret": "your-slack-secret"},
-        discord={"public_key": "your-discord-public-key"}
-    )
-)
+# Simple integration - just two lines!
+app.include_router(router, dependencies=[Depends(get_agent)])
+setup_router(router, get_agent=get_agent)
 ```
 
 ## Advanced Usage
 
-### Using Dependency Injection
+### With Vertex AI Agent Development Kit (ADK)
 
 ```python
 from fastapi import FastAPI, Depends
-from fastapi_agentrouter import Agent, AgentResponse, build_router
-from typing import Any, Dict
+from fastapi_agentrouter import router, setup_router
+from vertexai.preview import reasoning_engines
+from vertexai import Agent
 
-# Your AI service
-class AIService:
-    async def process(self, text: str) -> str:
-        # Your AI logic here
-        return f"Processed: {text}"
+# Define your agent with tools
+def get_weather(city: str) -> dict:
+    """Get weather for a city."""
+    return {"city": city, "weather": "sunny", "temperature": 25}
 
-# Dependency provider
-async def get_ai_service() -> AIService:
-    return AIService()
+agent = Agent(
+    name="weather_agent",
+    model="gemini-2.5-flash-lite",
+    description="Weather information agent",
+    tools=[get_weather],
+)
 
-class SmartAgent(Agent):
-    def __init__(self, ai_service: AIService):
-        self.ai_service = ai_service
-
-    async def handle_slack(self, event: Dict[str, Any]) -> str:
-        text = event.get("text", "")
-        return await self.ai_service.process(text)
-
-    async def handle_discord(self, interaction: Dict[str, Any]) -> Dict[str, Any]:
-        content = interaction.get("data", {}).get("options", [{}])[0].get("value", "")
-        result = await self.ai_service.process(content)
-        return {
-            "type": 4,
-            "data": {"content": result}
-        }
-
-    async def handle_webhook(self, data: Dict[str, Any]) -> AgentResponse:
-        text = data.get("message", "")
-        result = await self.ai_service.process(text)
-        return AgentResponse(content=result)
-
-# Factory function with DI
-async def create_agent(ai_service: AIService = Depends(get_ai_service)) -> SmartAgent:
-    return SmartAgent(ai_service)
+def get_adk_app():
+    return reasoning_engines.AdkApp(
+        agent=agent,
+        enable_tracing=True,
+    )
 
 app = FastAPI()
+app.include_router(router, dependencies=[Depends(get_adk_app)])
+setup_router(router, get_agent=get_adk_app)
+```
 
-# Use factory pattern with DI
-@app.on_event("startup")
-async def startup():
-    ai_service = await get_ai_service()
-    agent = SmartAgent(ai_service)
+### Custom Agent Implementation
 
-    app.include_router(
-        build_router(
-            agent,
-            slack={"signing_secret": "your-slack-secret"},
-            discord={"public_key": "your-discord-public-key"}
-        )
-    )
+```python
+class CustomAgent:
+    def stream_query(self, *, message: str, user_id=None, session_id=None):
+        # Your custom logic here
+        yield f"Response to: {message}"
+
+def get_custom_agent():
+    return CustomAgent()
+
+app = FastAPI()
+app.include_router(router, dependencies=[Depends(get_custom_agent)])
+setup_router(router, get_agent=get_custom_agent)
 ```
 
 ### Configuration Management

@@ -34,8 +34,9 @@ dependencies = [
 
 [project.optional-dependencies]
 slack = ["slack-bolt>=1.14.0"]
-discord = ["discord-interactions[fastapi]>=0.4.0"]
-all = ["fastapi-agentrouter[slack,discord]"]
+discord = ["PyNaCl>=1.5.0"]
+vertexai = ["google-cloud-aiplatform>=1.38.0"]
+all = ["fastapi-agentrouter[slack,discord,vertexai]"]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
