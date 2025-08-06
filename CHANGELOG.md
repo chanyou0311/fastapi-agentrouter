@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.1.0...v0.1.1) (2025-08-06)
+
+
+### Bug Fixes
+
+* add pages permission to release workflow ([571ad7f](https://github.com/chanyou0311/fastapi-agentrouter/commit/571ad7f96d5e3d40b093b880f1b29ff17eef34e9))
+
 ## 0.1.0 (2025-08-06)
 
 
