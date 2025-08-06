@@ -25,13 +25,13 @@ class AgentProtocol(Protocol):
 # This will be overridden by user's actual agent
 def get_agent_placeholder() -> AgentProtocol:
     """Placeholder for agent dependency.
-    
+
     Users should provide their own agent via dependencies:
     app.include_router(router, dependencies=[Depends(get_agent)])
     """
     raise HTTPException(
         status_code=500,
-        detail="Agent not configured. Please provide agent dependency when including router.",
+        detail="Agent not configured. Please provide agent dependency.",
     )
 
 

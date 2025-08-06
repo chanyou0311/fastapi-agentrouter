@@ -181,7 +181,7 @@ The method should yield response events. For Vertex AI ADK, events have a `conte
 
 Pre-configured APIRouter with all platform endpoints:
 - `/agent/slack/` - Slack integration endpoints
-- `/agent/discord/` - Discord integration endpoints  
+- `/agent/discord/` - Discord integration endpoints
 - `/agent/webhook` - Generic webhook endpoint
 
 #### `fastapi_agentrouter.get_agent_placeholder`
