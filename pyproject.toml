@@ -38,6 +38,7 @@ discord = ["PyNaCl>=1.5.0"]
 vertexai = ["google-cloud-aiplatform>=1.38.0"]
 all = ["fastapi-agentrouter[slack,discord,vertexai]"]
 dev = [
+    "fastapi[standard]>=0.116.1",
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "pytest-asyncio>=0.21.0",
