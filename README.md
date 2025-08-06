@@ -114,7 +114,7 @@ app.include_router(
     create_agent_router(
         get_agent,
         enable_slack=True,
-        enable_discord=False,  # Discord will return 501 Not Implemented
+        enable_discord=False,  # Discord will return 404 Not Found
         enable_webhook=True
     )
 )
@@ -186,7 +186,7 @@ Create a router with agent handlers.
 - `enable_discord`: Enable Discord integration (default: True)
 - `enable_webhook`: Enable webhook endpoint (default: True)
 
-Disabled endpoints will return HTTP 501 Not Implemented.
+Disabled endpoints will return HTTP 404 Not Found.
 
 ### Webhook Endpoint
 

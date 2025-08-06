@@ -110,7 +110,7 @@ app.include_router(
     create_agent_router(
         get_agent,
         enable_slack=True,
-        enable_discord=False,  # Returns 501 Not Implemented
+        enable_discord=False,  # Returns 404 Not Found
         enable_webhook=True
     )
 )

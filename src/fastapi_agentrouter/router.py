@@ -67,7 +67,7 @@ class AgentRouter(APIRouter):
             """Handle Slack events and slash commands."""
             if not self.enable_slack:
                 raise HTTPException(
-                    status_code=501, detail="Slack integration is not enabled"
+                    status_code=404, detail="Slack integration is not enabled"
                 )
 
             agent = self.get_agent()
@@ -163,7 +163,7 @@ class AgentRouter(APIRouter):
             """Handle Discord interactions."""
             if not self.enable_discord:
                 raise HTTPException(
-                    status_code=501, detail="Discord integration is not enabled"
+                    status_code=404, detail="Discord integration is not enabled"
                 )
 
             agent = self.get_agent()
@@ -264,7 +264,7 @@ class AgentRouter(APIRouter):
             """Handle generic webhook requests."""
             if not self.enable_webhook:
                 raise HTTPException(
-                    status_code=501, detail="Webhook endpoint is not enabled"
+                    status_code=404, detail="Webhook endpoint is not enabled"
                 )
 
             agent = self.get_agent()
@@ -316,7 +316,7 @@ def create_agent_router(
     """Create a router with agent handlers.
 
     This is the recommended way to integrate agents with FastAPI.
-    All endpoints are always defined, but disabled endpoints return 501.
+    All endpoints are always defined, but disabled endpoints return 404.
 
     Args:
         get_agent: Function that returns an agent instance

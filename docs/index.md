@@ -13,7 +13,7 @@ FastAPI AgentRouter makes it incredibly easy to integrate AI agents into your Fa
 - 🔌 **Multi-Platform** - Built-in Slack, Discord, and webhook endpoints
 - 🎯 **Protocol-Based** - Works with any agent implementing `stream_query` method
 - ⚡ **Async & Streaming** - Full async support with streaming responses
-- 🔒 **Graceful Disabling** - Disabled endpoints return HTTP 501 Not Implemented
+- 🔒 **Graceful Disabling** - Disabled endpoints return HTTP 404 Not Found
 
 ## Quick Example
 

@@ -51,7 +51,7 @@ def test_webhook_disabled():
         json={"message": "Hello"},
     )
 
-    assert response.status_code == 501
+    assert response.status_code == 404
     assert "Webhook endpoint is not enabled" in response.json()["detail"]
 
 
@@ -72,7 +72,7 @@ def test_slack_disabled():
 
     response = client.post("/agent/slack/events")
 
-    assert response.status_code == 501
+    assert response.status_code == 404
     assert "Slack integration is not enabled" in response.json()["detail"]
 
 
@@ -93,7 +93,7 @@ def test_discord_disabled():
 
     response = client.post("/agent/discord/interactions")
 
-    assert response.status_code == 501
+    assert response.status_code == 404
     assert "Discord integration is not enabled" in response.json()["detail"]
 
 
