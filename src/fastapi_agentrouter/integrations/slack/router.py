@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from ..dependencies import Agent, check_slack_enabled
+from ...dependencies import Agent
+from .dependencies import check_slack_enabled
 
 if TYPE_CHECKING:
     from slack_bolt import App

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from ..dependencies import check_discord_enabled
+from .dependencies import check_discord_enabled
 
 router = APIRouter(prefix="/discord", tags=["discord"])
 

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
-from ..dependencies import check_webhook_enabled
+from .dependencies import check_webhook_enabled
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
 

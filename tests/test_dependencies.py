@@ -5,11 +5,9 @@ import os
 import pytest
 from fastapi import HTTPException
 
-from fastapi_agentrouter.dependencies import (
-    check_discord_enabled,
-    check_slack_enabled,
-    check_webhook_enabled,
-)
+from fastapi_agentrouter.integrations.discord.dependencies import check_discord_enabled
+from fastapi_agentrouter.integrations.slack.dependencies import check_slack_enabled
+from fastapi_agentrouter.integrations.webhook.dependencies import check_webhook_enabled
 
 
 def test_agent_protocol():
