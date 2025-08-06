@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI
 
-from fastapi_agentrouter import create_agent_router
+import fastapi_agentrouter
 
 if TYPE_CHECKING:
     from vertexai.preview.reasoning_engines import AdkApp
 
 
-# Example 1: Simplest usage - one line integration
+# Example 1: Simplest usage - just include the router
 app = FastAPI()
 
 
@@ -31,36 +31,14 @@ def get_agent() -> Any:
     return MockAgent()
 
 
+# Override the dependency to provide your agent
+app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = get_agent
+
 # Single line integration!
-app.include_router(create_agent_router(get_agent))
+app.include_router(fastapi_agentrouter.router)
 
 
-# Example 2: Custom configuration
-app2 = FastAPI()
-
-# Disable specific platforms
-app2.include_router(
-    create_agent_router(
-        get_agent,
-        enable_slack=True,
-        enable_discord=False,  # Discord disabled
-        enable_webhook=True,
-    )
-)
-
-
-# Example 3: Custom prefix
-app3 = FastAPI()
-
-app3.include_router(
-    create_agent_router(
-        get_agent,
-        prefix="/api/v1/agent",  # Custom prefix
-    )
-)
-
-
-# Example 4: With Vertex AI ADK (when available)
+# Example 2: With Vertex AI ADK (when available)
 def get_vertex_agent() -> "AdkApp":
     """Get Vertex AI ADK App instance."""
     try:
@@ -84,8 +62,9 @@ def get_vertex_agent() -> "AdkApp":
         return get_agent()  # Fallback to mock
 
 
-app4 = FastAPI()
-app4.include_router(create_agent_router(get_vertex_agent))
+app2 = FastAPI()
+app2.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = get_vertex_agent
+app2.include_router(fastapi_agentrouter.router)
 
 
 if __name__ == "__main__":

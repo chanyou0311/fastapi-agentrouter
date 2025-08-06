@@ -2,11 +2,12 @@
 
 __version__ = "0.1.0"
 
-from .router import AgentProtocol, AgentRouter, create_agent_router
+from .dependencies import AgentProtocol, get_agent_placeholder
+from .routers import router
 
 __all__ = [
     "AgentProtocol",
-    "AgentRouter",
     "__version__",
-    "create_agent_router",
+    "get_agent_placeholder",
+    "router",
 ]

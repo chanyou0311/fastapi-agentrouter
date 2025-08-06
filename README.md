@@ -15,6 +15,7 @@ Simplified AI Agent integration for FastAPI with multi-platform support (Slack, 
 - 🎯 **Protocol-Based** - Works with any agent implementing `stream_query` method
 - ⚡ **Async & Streaming** - Full async support with streaming responses
 - 🧩 **Dependency Injection** - Leverage FastAPI's DI system
+- 📁 **Modular Architecture** - Separate routers for each platform
 
 ## Installation
 
@@ -174,19 +175,27 @@ The method should yield response events. For Vertex AI ADK, events have a `conte
 
 ## API Reference
 
-### Core Functions
+### Core Components
 
-#### `create_agent_router(get_agent, **options) -> AgentRouter`
+#### `fastapi_agentrouter.router`
 
-Create a router with agent handlers.
+Pre-configured APIRouter with all platform endpoints:
+- `/agent/slack/` - Slack integration endpoints
+- `/agent/discord/` - Discord integration endpoints  
+- `/agent/webhook` - Generic webhook endpoint
 
-- `get_agent`: Function that returns an agent instance
-- `prefix`: URL prefix for the router (default: "/agent")
-- `enable_slack`: Enable Slack integration (default: True)
-- `enable_discord`: Enable Discord integration (default: True)
-- `enable_webhook`: Enable webhook endpoint (default: True)
+#### `fastapi_agentrouter.get_agent_placeholder`
 
-Disabled endpoints will return HTTP 404 Not Found.
+Dependency placeholder that should be overridden with your agent:
+```python
+app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = your_get_agent_function
+```
+
+### Environment Variables
+
+- `DISABLE_SLACK=true` - Disable Slack endpoints (return 404)
+- `DISABLE_DISCORD=true` - Disable Discord endpoints (return 404)
+- `DISABLE_WEBHOOK=true` - Disable webhook endpoint (return 404)
 
 ### Webhook Endpoint
 
