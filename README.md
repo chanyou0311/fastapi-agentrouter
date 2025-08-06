@@ -5,15 +5,15 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/fastapi-agentrouter.svg)](https://pypi.org/project/fastapi-agentrouter/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AI Agent interface library for FastAPI with multi-platform support.
+Simplified AI Agent integration for FastAPI with multi-platform support (Slack, Discord, Webhook).
 
 ## Features
 
-- 🚀 **Easy Integration** - Simple API to integrate AI agents with FastAPI
-- 🔌 **Multi-Platform Support** - Built-in support for Slack, Discord, and webhooks
-- 🎯 **Type Safety** - Full type hints and Pydantic models
-- 🔧 **Flexible Configuration** - Easy to configure and extend
-- ⚡ **Async Support** - Built on FastAPI's async capabilities
+- 🚀 **Simple Integration** - Just 2 lines to add agent to your FastAPI app
+- 🤖 **Vertex AI ADK Support** - Native support for Google's Agent Development Kit
+- 🔌 **Multi-Platform** - Built-in Slack, Discord, and webhook endpoints
+- 🎯 **Protocol-Based** - Works with any agent implementing `stream_query` method
+- ⚡ **Async & Streaming** - Full async support with streaming responses
 - 🧩 **Dependency Injection** - Leverage FastAPI's DI system
 
 ## Installation
@@ -22,14 +22,11 @@ AI Agent interface library for FastAPI with multi-platform support.
 # Basic installation
 pip install fastapi-agentrouter
 
-# With Slack support
-pip install "fastapi-agentrouter[slack]"
-
-# With Discord support
-pip install "fastapi-agentrouter[discord]"
-
-# With all integrations
-pip install "fastapi-agentrouter[all]"
+# With platform-specific dependencies
+pip install "fastapi-agentrouter[slack]"      # For Slack support
+pip install "fastapi-agentrouter[discord]"    # For Discord support  
+pip install "fastapi-agentrouter[vertexai]"   # For Vertex AI ADK
+pip install "fastapi-agentrouter[all]"        # All platforms
 ```
 
 ## Quick Start
@@ -51,6 +48,11 @@ app = FastAPI()
 app.include_router(router, dependencies=[Depends(get_agent)])
 setup_router(router, get_agent=get_agent)
 ```
+
+That's it! Your agent is now available at:
+- `/agent/webhook` - Generic webhook endpoint
+- `/agent/slack/events` - Slack events and slash commands
+- `/agent/discord/interactions` - Discord interactions
 
 ## Advanced Usage
 
@@ -101,48 +103,125 @@ app.include_router(router, dependencies=[Depends(get_custom_agent)])
 setup_router(router, get_agent=get_custom_agent)
 ```
 
-### Configuration Management
+### Selective Platform Integration
 
 ```python
-from fastapi_agentrouter.utils import Config, SlackConfig, DiscordConfig
+from fastapi_agentrouter import create_default_router
 
-# Load from environment or config file
-config = Config(
-    prefix="/api/agent",
-    slack=SlackConfig(
-        signing_secret="your-slack-secret",
-        bot_token="xoxb-your-bot-token"  # Optional
-    ),
-    discord=DiscordConfig(
-        public_key="your-discord-public-key",
-        application_id="your-app-id",  # Optional
-        bot_token="your-bot-token"  # Optional
-    ),
-    webhook=True
+# Enable only specific platforms
+def get_agent():
+    return your_agent
+
+# Create router with only webhook and Slack
+router = APIRouter(prefix="/agent")
+setup_router(
+    router, 
+    get_agent=get_agent,
+    enable_slack=True,
+    enable_discord=False,  # Disable Discord
+    enable_webhook=True
 )
 
-# Use with router
-app.include_router(
-    build_router(agent, **config.to_router_kwargs())
-)
+app = FastAPI()
+app.include_router(router, dependencies=[Depends(get_agent)])
 ```
 
-## Platform-Specific Setup
+## Configuration
 
-### Slack Setup
+### Environment Variables
+
+Configure platform integrations via environment variables:
+
+```bash
+# Slack configuration
+export SLACK_SIGNING_SECRET="your-slack-signing-secret"
+
+# Discord configuration  
+export DISCORD_PUBLIC_KEY="your-discord-public-key"
+```
+
+### Platform Setup
+
+#### Slack Setup
 
 1. Create a Slack App at https://api.slack.com/apps
 2. Get your Signing Secret from Basic Information
-3. Set up Event Subscriptions URL: `https://your-domain.com/agent/slack/events`
-4. Subscribe to required events (e.g., `message.channels`, `app_mention`)
-5. Install the app to your workspace
+3. Set environment variable: `SLACK_SIGNING_SECRET`
+4. Configure Event Subscriptions URL: `https://your-domain.com/agent/slack/events`
+5. Subscribe to events: `message.channels`, `app_mention`, etc.
+6. For slash commands, use the same URL
 
-### Discord Setup
+#### Discord Setup
 
-1. Create a Discord Application at https://discord.com/developers/applications
+1. Create Discord Application at https://discord.com/developers/applications
 2. Get your Public Key from General Information
-3. Set Interactions Endpoint URL: `https://your-domain.com/agent/discord/interactions`
-4. Add bot to your server with appropriate permissions
+3. Set environment variable: `DISCORD_PUBLIC_KEY`
+4. Set Interactions Endpoint URL: `https://your-domain.com/agent/discord/interactions`
+
+## Agent Protocol
+
+Your agent must implement the `stream_query` method:
+
+```python
+class AgentProtocol:
+    def stream_query(
+        self, 
+        *, 
+        message: str,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        **kwargs
+    ) -> Iterator[Any]:
+        """Stream responses for a message."""
+        ...
+```
+
+The method should yield response events. For Vertex AI ADK, events have a `content` attribute.
+
+## API Reference
+
+### Core Functions
+
+#### `setup_router(router, get_agent, enable_slack=True, enable_discord=True, enable_webhook=True)`
+
+Configure a router with agent handlers.
+
+- `router`: FastAPI APIRouter instance
+- `get_agent`: Function that returns an agent instance
+- `enable_slack`: Enable Slack integration (default: True)
+- `enable_discord`: Enable Discord integration (default: True)
+- `enable_webhook`: Enable webhook endpoint (default: True)
+
+#### `create_default_router(get_agent) -> APIRouter`
+
+Create a pre-configured router with all integrations enabled.
+
+### Webhook Endpoint
+
+**POST** `/agent/webhook`
+
+Request body:
+```json
+{
+  "message": "Your message here",
+  "user_id": "optional-user-id",
+  "session_id": "optional-session-id"
+}
+```
+
+Response:
+```json
+{
+  "response": "Agent response",
+  "session_id": "session-id-if-provided"
+}
+```
+
+## Examples
+
+See the [examples](examples/) directory for complete examples:
+- [basic_usage.py](examples/basic_usage.py) - Basic integration patterns
+- More examples coming soon!
 
 ## Development
 
@@ -173,7 +252,7 @@ pytest
 pytest --cov=src --cov-report=html
 
 # Run specific tests
-pytest tests/test_core/
+pytest tests/test_router.py
 ```
 
 ### Build Documentation
