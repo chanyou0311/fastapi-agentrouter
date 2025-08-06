@@ -203,7 +203,7 @@ Disabled endpoints return 404 with appropriate error messages.
    # Build docs to check for errors
    mkdocs build --strict
    ```
-   
+
    **Important**: Handling pre-commit hook failures:
    - If pre-commit hooks fail, they may **automatically fix files** (e.g., `end-of-file-fixer`, `ruff format`)
    - When files are modified by hooks:
@@ -220,7 +220,7 @@ Disabled endpoints return 404 with appropriate error messages.
    uv run pytest
    uv run mypy src
    uv run ruff check src tests
-   
+
    # If any of these fail, fix the issues before committing
    ```
 
