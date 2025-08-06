@@ -32,8 +32,8 @@ pip install "fastapi-agentrouter[all]"        # All platforms
 ## Quick Start
 
 ```python
-from fastapi import FastAPI, Depends
-from fastapi_agentrouter import router, setup_router
+from fastapi import FastAPI
+from fastapi_agentrouter import create_agent_router
 
 # Your agent implementation (e.g., Vertex AI ADK)
 def get_agent():
@@ -44,9 +44,8 @@ def get_agent():
 
 app = FastAPI()
 
-# Simple integration - just two lines!
-app.include_router(router, dependencies=[Depends(get_agent)])
-setup_router(router, get_agent=get_agent)
+# Simple integration - just one line!
+app.include_router(create_agent_router(get_agent))
 ```
 
 That's it! Your agent is now available at:
@@ -59,8 +58,8 @@ That's it! Your agent is now available at:
 ### With Vertex AI Agent Development Kit (ADK)
 
 ```python
-from fastapi import FastAPI, Depends
-from fastapi_agentrouter import router, setup_router
+from fastapi import FastAPI
+from fastapi_agentrouter import create_agent_router
 from vertexai.preview import reasoning_engines
 from vertexai import Agent
 
@@ -83,8 +82,7 @@ def get_adk_app():
     )
 
 app = FastAPI()
-app.include_router(router, dependencies=[Depends(get_adk_app)])
-setup_router(router, get_agent=get_adk_app)
+app.include_router(create_agent_router(get_adk_app))
 ```
 
 ### Custom Agent Implementation
@@ -99,31 +97,27 @@ def get_custom_agent():
     return CustomAgent()
 
 app = FastAPI()
-app.include_router(router, dependencies=[Depends(get_custom_agent)])
-setup_router(router, get_agent=get_custom_agent)
+app.include_router(create_agent_router(get_custom_agent))
 ```
 
 ### Selective Platform Integration
 
 ```python
-from fastapi_agentrouter import create_default_router
+from fastapi_agentrouter import create_agent_router
 
 # Enable only specific platforms
 def get_agent():
     return your_agent
 
-# Create router with only webhook and Slack
-router = APIRouter(prefix="/agent")
-setup_router(
-    router,
-    get_agent=get_agent,
-    enable_slack=True,
-    enable_discord=False,  # Disable Discord
-    enable_webhook=True
-)
-
 app = FastAPI()
-app.include_router(router, dependencies=[Depends(get_agent)])
+app.include_router(
+    create_agent_router(
+        get_agent,
+        enable_slack=True,
+        enable_discord=False,  # Discord will return 501 Not Implemented
+        enable_webhook=True
+    )
+)
 ```
 
 ## Configuration
@@ -182,19 +176,17 @@ The method should yield response events. For Vertex AI ADK, events have a `conte
 
 ### Core Functions
 
-#### `setup_router(router, get_agent, enable_slack=True, enable_discord=True, enable_webhook=True)`
+#### `create_agent_router(get_agent, **options) -> AgentRouter`
 
-Configure a router with agent handlers.
+Create a router with agent handlers.
 
-- `router`: FastAPI APIRouter instance
 - `get_agent`: Function that returns an agent instance
+- `prefix`: URL prefix for the router (default: "/agent")
 - `enable_slack`: Enable Slack integration (default: True)
 - `enable_discord`: Enable Discord integration (default: True)
 - `enable_webhook`: Enable webhook endpoint (default: True)
 
-#### `create_default_router(get_agent) -> APIRouter`
-
-Create a pre-configured router with all integrations enabled.
+Disabled endpoints will return HTTP 501 Not Implemented.
 
 ### Webhook Endpoint
 

@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_agentrouter import setup_router
+from fastapi_agentrouter import create_agent_router
 
 
 class MockAgent:
@@ -41,13 +41,9 @@ def get_agent_factory(mock_agent: MockAgent):
 @pytest.fixture
 def test_app(get_agent_factory) -> FastAPI:
     """Create a test FastAPI application."""
-    from fastapi import APIRouter, Depends
-
     app = FastAPI()
-    # Create a new router instance for testing
-    test_router = APIRouter(prefix="/agent")
-    setup_router(test_router, get_agent=get_agent_factory)
-    app.include_router(test_router, dependencies=[Depends(get_agent_factory)])
+    router = create_agent_router(get_agent_factory)
+    app.include_router(router)
     return app
 
 

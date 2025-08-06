@@ -19,17 +19,16 @@ class SimpleAgent:
 ### Step 2: Integrate with FastAPI
 
 ```python
-from fastapi import FastAPI, Depends
-from fastapi_agentrouter import router, setup_router
+from fastapi import FastAPI
+from fastapi_agentrouter import create_agent_router
 
 def get_agent():
     return SimpleAgent()
 
 app = FastAPI()
 
-# Add the router with your agent
-app.include_router(router, dependencies=[Depends(get_agent)])
-setup_router(router, get_agent=get_agent)
+# Add the router with your agent - just one line!
+app.include_router(create_agent_router(get_agent))
 ```
 
 ### Step 3: Test Your Agent
@@ -78,8 +77,8 @@ agent = Agent(
 ### Step 2: Create ADK App and Integrate
 
 ```python
-from fastapi import FastAPI, Depends
-from fastapi_agentrouter import router, setup_router
+from fastapi import FastAPI
+from fastapi_agentrouter import create_agent_router
 
 def get_adk_app():
     return reasoning_engines.AdkApp(
@@ -89,9 +88,8 @@ def get_adk_app():
 
 app = FastAPI()
 
-# Integrate with FastAPI
-app.include_router(router, dependencies=[Depends(get_adk_app)])
-setup_router(router, get_agent=get_adk_app)
+# Integrate with FastAPI - just one line!
+app.include_router(create_agent_router(get_adk_app))
 ```
 
 ### Step 3: Configure Environment
@@ -101,6 +99,21 @@ Set up your Google Cloud credentials:
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account.json"
 export GOOGLE_CLOUD_PROJECT="your-project-id"
+```
+
+## Platform Configuration
+
+You can selectively enable or disable platforms:
+
+```python
+app.include_router(
+    create_agent_router(
+        get_agent,
+        enable_slack=True,
+        enable_discord=False,  # Returns 501 Not Implemented
+        enable_webhook=True
+    )
+)
 ```
 
 ## Platform Integration
@@ -135,8 +148,8 @@ export DISCORD_PUBLIC_KEY="your-discord-public-key"
 Here's a complete example with all features:
 
 ```python
-from fastapi import FastAPI, Depends
-from fastapi_agentrouter import router, setup_router
+from fastapi import FastAPI
+from fastapi_agentrouter import create_agent_router
 from vertexai import Agent
 from vertexai.preview import reasoning_engines
 import os
@@ -162,9 +175,8 @@ def get_agent():
 # Create FastAPI app
 app = FastAPI(title="My Agent API")
 
-# Add agent router
-app.include_router(router, dependencies=[Depends(get_agent)])
-setup_router(router, get_agent=get_agent)
+# Add agent router - just one line!
+app.include_router(create_agent_router(get_agent))
 
 if __name__ == "__main__":
     import uvicorn
