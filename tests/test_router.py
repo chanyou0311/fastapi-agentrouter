@@ -1,6 +1,5 @@
 """Tests for the router module."""
 
-import pytest
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
 

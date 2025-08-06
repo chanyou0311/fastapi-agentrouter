@@ -24,7 +24,7 @@ pip install fastapi-agentrouter
 
 # With platform-specific dependencies
 pip install "fastapi-agentrouter[slack]"      # For Slack support
-pip install "fastapi-agentrouter[discord]"    # For Discord support  
+pip install "fastapi-agentrouter[discord]"    # For Discord support
 pip install "fastapi-agentrouter[vertexai]"   # For Vertex AI ADK
 pip install "fastapi-agentrouter[all]"        # All platforms
 ```
@@ -115,7 +115,7 @@ def get_agent():
 # Create router with only webhook and Slack
 router = APIRouter(prefix="/agent")
 setup_router(
-    router, 
+    router,
     get_agent=get_agent,
     enable_slack=True,
     enable_discord=False,  # Disable Discord
@@ -136,7 +136,7 @@ Configure platform integrations via environment variables:
 # Slack configuration
 export SLACK_SIGNING_SECRET="your-slack-signing-secret"
 
-# Discord configuration  
+# Discord configuration
 export DISCORD_PUBLIC_KEY="your-discord-public-key"
 ```
 
@@ -165,8 +165,8 @@ Your agent must implement the `stream_query` method:
 ```python
 class AgentProtocol:
     def stream_query(
-        self, 
-        *, 
+        self,
+        *,
         message: str,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,

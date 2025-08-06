@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, FastAPI
 
-from fastapi_agentrouter import router, setup_router
+from fastapi_agentrouter import create_default_router, router, setup_router
 
 if TYPE_CHECKING:
     from vertexai.preview.reasoning_engines import AdkApp
@@ -22,6 +22,7 @@ def get_agent() -> Any:
     - Custom agent implementing AgentProtocol
     - Any object with stream_query method
     """
+
     # Example with mock agent for testing
     class MockAgent:
         def stream_query(self, *, message: str, **kwargs):
@@ -41,8 +42,6 @@ setup_router(router, get_agent=get_agent)
 app2 = FastAPI()
 
 # Create custom router with specific integrations
-from fastapi_agentrouter import create_default_router
-
 custom_router = create_default_router(get_agent)
 app2.include_router(custom_router)
 
@@ -51,8 +50,7 @@ app2.include_router(custom_router)
 def get_vertex_agent() -> "AdkApp":
     """Get Vertex AI ADK App instance."""
     try:
-        from vertexai import agent_engines
-        from vertexai.preview import reasoning_engines
+        from vertexai.preview import reasoning_engines  # noqa: F401
 
         # This would be your actual agent configuration
         # agent = Agent(

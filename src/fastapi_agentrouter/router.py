@@ -1,12 +1,12 @@
 """FastAPI router for agent integrations."""
 
-from typing import TYPE_CHECKING, Any, Optional, Protocol
+from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
 if TYPE_CHECKING:
-    from vertexai.preview.reasoning_engines import AdkApp
+    pass
 
 
 class AgentProtocol(Protocol):
@@ -24,7 +24,7 @@ class AgentProtocol(Protocol):
         ...
 
 
-def create_slack_handler(get_agent: Any) -> Any:
+def create_slack_handler(get_agent: Callable[[], AgentProtocol]) -> Any:
     """Create Slack event handler with agent dependency."""
     import hashlib
     import hmac
@@ -32,11 +32,16 @@ def create_slack_handler(get_agent: Any) -> Any:
     import time
     from urllib.parse import parse_qs
 
+    def _get_agent_dep() -> Any:
+        return Depends(get_agent)
+
     async def handle_slack_events(
         request: Request,
-        agent: AgentProtocol = Depends(get_agent),
     ) -> Response:
         """Handle Slack events and slash commands."""
+        # Get agent from dependency injection
+        agent = get_agent()
+
         # Get signing secret from environment or config
         import os
 
@@ -107,19 +112,21 @@ def create_slack_handler(get_agent: Any) -> Any:
             return PlainTextResponse(content=response_text)
 
         except Exception as e:
-            return PlainTextResponse(content=f"Error: {str(e)}")
+            return PlainTextResponse(content=f"Error: {e!s}")
 
     return handle_slack_events
 
 
-def create_discord_handler(get_agent: Any) -> Any:
+def create_discord_handler(get_agent: Callable[[], AgentProtocol]) -> Any:
     """Create Discord interaction handler with agent dependency."""
 
     async def handle_discord_interactions(
         request: Request,
-        agent: AgentProtocol = Depends(get_agent),
     ) -> JSONResponse:
         """Handle Discord interactions."""
+        # Get agent from dependency injection
+        agent = get_agent()
+
         import os
 
         public_key = os.getenv("DISCORD_PUBLIC_KEY", "")
@@ -148,8 +155,10 @@ def create_discord_handler(get_agent: Any) -> Any:
         try:
             verify_key = VerifyKey(bytes.fromhex(public_key))
             verify_key.verify(message, bytes.fromhex(signature))
-        except (BadSignatureError, Exception):
-            raise HTTPException(status_code=401, detail="Invalid request signature")
+        except (BadSignatureError, Exception) as e:
+            raise HTTPException(
+                status_code=401, detail="Invalid request signature"
+            ) from e
 
         # Parse interaction
         import json
@@ -160,28 +169,25 @@ def create_discord_handler(get_agent: Any) -> Any:
         if interaction.get("type") == 1:
             return JSONResponse(content={"type": 1})
 
-        # Handle application command
+        # Handle APPLICATION_COMMAND
         if interaction.get("type") == 2:
+            # Get command data
             data = interaction.get("data", {})
+            command_name = data.get("name", "")
             options = data.get("options", [])
-            message_text = ""
 
-            if options:
-                message_text = options[0].get("value", "")
+            # Get message from options or use command name
+            message_text = command_name
+            for option in options:
+                if option.get("name") == "message":
+                    message_text = option.get("value", command_name)
+                    break
 
-            if not message_text:
-                return JSONResponse(
-                    content={
-                        "type": 4,
-                        "data": {"content": "Please provide a message."},
-                    }
-                )
+            user_id = interaction.get("member", {}).get("user", {}).get("id", "")
 
             # Query agent
             try:
                 response_parts = []
-                user_id = interaction.get("member", {}).get("user", {}).get("id", "")
-
                 for event in agent.stream_query(message=message_text, user_id=user_id):
                     if hasattr(event, "content"):
                         response_parts.append(event.content)
@@ -196,7 +202,7 @@ def create_discord_handler(get_agent: Any) -> Any:
 
             except Exception as e:
                 return JSONResponse(
-                    content={"type": 4, "data": {"content": f"Error: {str(e)}"}}
+                    content={"type": 4, "data": {"content": f"Error: {e!s}"}}
                 )
 
         return JSONResponse(
@@ -206,14 +212,16 @@ def create_discord_handler(get_agent: Any) -> Any:
     return handle_discord_interactions
 
 
-def create_webhook_handler(get_agent: Any) -> Any:
+def create_webhook_handler(get_agent: Callable[[], AgentProtocol]) -> Any:
     """Create generic webhook handler with agent dependency."""
 
     async def handle_webhook(
         request: Request,
-        agent: AgentProtocol = Depends(get_agent),
     ) -> JSONResponse:
         """Handle generic webhook requests."""
+        # Get agent from dependency injection
+        agent = get_agent()
+
         data = await request.json()
         message = data.get("message", "")
         user_id = data.get("user_id", None)
@@ -223,7 +231,6 @@ def create_webhook_handler(get_agent: Any) -> Any:
             raise HTTPException(status_code=400, detail="Message is required")
 
         try:
-
             response_parts = []
             for event in agent.stream_query(
                 message=message, user_id=user_id, session_id=session_id
@@ -245,43 +252,56 @@ def create_webhook_handler(get_agent: Any) -> Any:
     return handle_webhook
 
 
-# Pre-configured router
+# Global router instance
 router = APIRouter(prefix="/agent")
 
 
 def setup_router(
     router: APIRouter,
-    *,
-    get_agent: Any,
+    get_agent: Callable[[], AgentProtocol],
     enable_slack: bool = True,
     enable_discord: bool = True,
     enable_webhook: bool = True,
 ) -> None:
-    """Setup router with agent handlers.
+    """Set up router with agent handlers.
 
     Args:
         router: FastAPI router to configure
         get_agent: Dependency function that returns an agent instance
         enable_slack: Enable Slack integration
         enable_discord: Enable Discord integration
-        enable_webhook: Enable generic webhook endpoint
+        enable_webhook: Enable webhook endpoint
     """
     if enable_slack:
         slack_handler = create_slack_handler(get_agent)
-        router.post("/slack/events")(slack_handler)
+        router.add_api_route(
+            "/slack/events",
+            slack_handler,
+            methods=["POST"],
+            dependencies=[Depends(get_agent)],
+        )
 
     if enable_discord:
         discord_handler = create_discord_handler(get_agent)
-        router.post("/discord/interactions")(discord_handler)
+        router.add_api_route(
+            "/discord/interactions",
+            discord_handler,
+            methods=["POST"],
+            dependencies=[Depends(get_agent)],
+        )
 
     if enable_webhook:
         webhook_handler = create_webhook_handler(get_agent)
-        router.post("/webhook")(webhook_handler)
+        router.add_api_route(
+            "/webhook",
+            webhook_handler,
+            methods=["POST"],
+            dependencies=[Depends(get_agent)],
+        )
 
 
-# Default router with all integrations
-def create_default_router(get_agent: Any) -> APIRouter:
-    """Create a pre-configured router with all integrations.
+def create_default_router(get_agent: Callable[[], AgentProtocol]) -> APIRouter:
+    """Create a default router with all integrations enabled.
 
     Args:
         get_agent: Dependency function that returns an agent instance
