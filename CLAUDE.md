@@ -114,10 +114,10 @@ Any agent must implement the `stream_query` method:
 ```python
 class AgentProtocol(Protocol):
     def stream_query(
-        self, *, 
-        message: str, 
+        self, *,
+        message: str,
         user_id: Optional[str] = None,
-        session_id: Optional[str] = None, 
+        session_id: Optional[str] = None,
         **kwargs: Any
     ) -> Any:
         """Stream responses from the agent."""
@@ -179,17 +179,17 @@ Disabled endpoints return 404 with appropriate error messages.
    ```bash
    # Run tests
    pytest
-   
+
    # Check formatting and linting
    ruff check src tests
    ruff format src tests
-   
+
    # Type checking
    mypy src
-   
+
    # Pre-commit hooks
    pre-commit run --all-files
-   
+
    # Build docs to check for errors
    mkdocs build --strict
    ```

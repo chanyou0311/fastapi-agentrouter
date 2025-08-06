@@ -3,10 +3,8 @@
 import os
 
 import pytest
-from fastapi import FastAPI, HTTPException
-from fastapi.testclient import TestClient
+from fastapi import HTTPException
 
-from fastapi_agentrouter import router
 from fastapi_agentrouter.dependencies import (
     check_discord_enabled,
     check_slack_enabled,
@@ -24,18 +22,6 @@ def test_agent_protocol():
     agent = TestAgent()
     # Should be compatible with AgentProtocol
     assert hasattr(agent, "stream_query")
-
-
-def test_no_agent_configured():
-    """Test when agent is not configured."""
-    app = FastAPI()
-    # Don't override the dependency - should use placeholder
-    app.include_router(router)
-    client = TestClient(app)
-
-    response = client.post("/agent/webhook")
-    assert response.status_code == 500
-    assert "Agent not configured" in response.json()["detail"]
 
 
 def test_check_slack_enabled():

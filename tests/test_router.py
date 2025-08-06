@@ -15,7 +15,7 @@ def test_router_includes_all_platforms(test_client: TestClient):
     response = test_client.get("/agent/discord/")
     assert response.status_code == 200
 
-    response = test_client.get("/agent/webhook")
+    response = test_client.get("/agent/webhook/")
     assert response.status_code == 200
 
 
@@ -39,14 +39,11 @@ def test_complete_integration():
     app.include_router(router)
     client = TestClient(app)
 
-    # Test all platform endpoints
+    # Test all platform endpoints (only status endpoints now)
     endpoints = [
         ("/agent/slack/", "GET"),
-        ("/agent/slack/events", "POST"),
         ("/agent/discord/", "GET"),
-        ("/agent/discord/interactions", "POST"),
-        ("/agent/webhook", "GET"),
-        ("/agent/webhook", "POST"),
+        ("/agent/webhook/", "GET"),
     ]
 
     for path, method in endpoints:
