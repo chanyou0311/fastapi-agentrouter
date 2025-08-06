@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
-from fastapi_agentrouter import get_agent_placeholder, router
+from fastapi_agentrouter import router
 from fastapi_agentrouter.dependencies import (
     check_discord_enabled,
     check_slack_enabled,
@@ -16,7 +16,6 @@ from fastapi_agentrouter.dependencies import (
 
 def test_agent_protocol():
     """Test that agent protocol is properly defined."""
-    from fastapi_agentrouter import AgentProtocol
 
     class TestAgent:
         def stream_query(self, *, message: str, user_id=None, session_id=None):
