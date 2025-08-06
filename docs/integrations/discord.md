@@ -1,0 +1,3 @@
+# Discord Integration
+
+Coming soon.
