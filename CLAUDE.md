@@ -154,11 +154,21 @@ Disabled endpoints return 404 with appropriate error messages.
 
 ### 4. Pre-commit Failures
 **Problem**: CI fails on formatting/linting
-**Solution**: Always run `pre-commit run --all-files` before committing
+**Solution**: Always run `uv run pre-commit run --all-files` before committing
+- Pre-commit hooks may auto-fix files (formatting, line endings, etc.)
+- Always add auto-fixed files to your commit after running pre-commit
+- Keep running until no files are modified
 
 ### 5. Line Length
 **Problem**: E501 line too long errors
 **Solution**: Keep lines under 88 characters (Ruff configuration)
+
+### 6. File Endings
+**Problem**: CI fails with "end-of-file-fixer" pre-commit hook
+**Solution**: **ALWAYS ensure all files end with exactly one newline character**
+- This includes all source files (`.py`), documentation (`.md`), and configuration files
+- The pre-commit hook `end-of-file-fixer` will fail if files don't end with a newline
+- When editing files with Claude Code, double-check that the file ends with a newline
 
 ## 🔄 Workflow for Changes
 
@@ -187,14 +197,34 @@ Disabled endpoints return 404 with appropriate error messages.
    # Type checking
    mypy src
 
-   # Pre-commit hooks
-   pre-commit run --all-files
+   # Pre-commit hooks - MUST pass before committing
+   uv run pre-commit run --all-files
 
    # Build docs to check for errors
    mkdocs build --strict
    ```
+   
+   **Important**: Handling pre-commit hook failures:
+   - If pre-commit hooks fail, they may **automatically fix files** (e.g., `end-of-file-fixer`, `ruff format`)
+   - When files are modified by hooks:
+     1. Review the changes made by pre-commit
+     2. **Add the fixed files to your commit**: `git add .`
+     3. Run `uv run pre-commit run --all-files` again
+     4. Repeat until all checks pass (no files modified)
+   - CI will fail if these checks don't pass, so always ensure pre-commit succeeds locally
 
-4. **Commit**
+4. **Verify CI Will Pass**
+   ```bash
+   # Simulate CI checks locally
+   uv run pre-commit run --all-files
+   uv run pytest
+   uv run mypy src
+   uv run ruff check src tests
+   
+   # If any of these fail, fix the issues before committing
+   ```
+
+5. **Commit**
    ```bash
    git add .
    git commit -m "feat: descriptive message"
@@ -253,6 +283,7 @@ The project uses `release-please` for automated releases:
 6. **Use mock implementations** for platform endpoints
 7. **Keep the integration simple** (2-line goal)
 8. **Document environment variables** clearly
+9. **Ensure files end with a newline** to avoid pre-commit failures
 
 ## 🐛 Known Issues
 
