@@ -1,19 +1,12 @@
-name: Auto Approve
+name: Auto approve
 
-on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-
-permissions:
-  pull-requests: write
+on: pull_request_target
 
 jobs:
   auto-approve:
-    name: Auto Approve PR
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'chanyou0311'
+    permissions:
+      pull-requests: write
+    if: github.actor == 'chanyou0311'
     steps:
-      - name: Approve PR
-        uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: hmarr/auto-approve-action@v4
