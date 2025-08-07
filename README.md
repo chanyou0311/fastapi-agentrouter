@@ -5,17 +5,17 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/fastapi-agentrouter.svg)](https://pypi.org/project/fastapi-agentrouter/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Simplified AI Agent integration for FastAPI with multi-platform support (Slack, Discord, Webhook).
+Simplified AI Agent integration for FastAPI with Slack support.
 
 ## Features
 
 - 🚀 **Simple Integration** - Just 2 lines to add agent to your FastAPI app
 - 🤖 **Vertex AI ADK Support** - Native support for Google's Agent Development Kit
-- 🔌 **Multi-Platform** - Built-in Slack, Discord, and webhook endpoints
+- 💬 **Slack Integration** - Built-in Slack Bolt integration with lazy listeners
 - 🎯 **Protocol-Based** - Works with any agent implementing `stream_query` method
 - ⚡ **Async & Streaming** - Full async support with streaming responses
 - 🧩 **Dependency Injection** - Leverage FastAPI's DI system
-- 📁 **Modular Architecture** - Separate routers for each platform
+- 📁 **Modular Architecture** - Clean separation of concerns
 
 ## Installation
 
@@ -23,11 +23,14 @@ Simplified AI Agent integration for FastAPI with multi-platform support (Slack, 
 # Basic installation
 pip install fastapi-agentrouter
 
-# With platform-specific dependencies
-pip install "fastapi-agentrouter[slack]"      # For Slack support
-pip install "fastapi-agentrouter[discord]"    # For Discord support
-pip install "fastapi-agentrouter[vertexai]"   # For Vertex AI ADK
-pip install "fastapi-agentrouter[all]"        # All platforms
+# With Slack support
+pip install "fastapi-agentrouter[slack]"
+
+# With Vertex AI ADK support
+pip install "fastapi-agentrouter[vertexai]"
+
+# All extras
+pip install "fastapi-agentrouter[all]"
 ```
 
 ## Quick Start
@@ -50,12 +53,7 @@ app.include_router(router)
 ```
 
 That's it! Your agent is now available at:
-- `/agent/webhook` - Generic webhook endpoint
-- `/agent/slack/` - Slack integration endpoints
-  - `/agent/slack/events` - Handle Slack events
-  - `/agent/slack/interactions` - Handle interactive components
-  - `/agent/slack/commands` - Handle slash commands
-- `/agent/discord/` - Discord integration endpoints
+- `/agent/slack/events` - Handle all Slack events and interactions
 
 ## Advanced Usage
 
@@ -109,15 +107,15 @@ app.dependency_overrides[get_agent_placeholder] = get_custom_agent
 app.include_router(router)
 ```
 
-### Disabling Specific Platforms
+### Disabling Slack Integration
 
 ```python
 import os
 from fastapi import FastAPI
 from fastapi_agentrouter import router, get_agent_placeholder
 
-# Disable specific platforms via environment variables
-os.environ["DISABLE_DISCORD"] = "true"  # Discord endpoints will return 404
+# Disable Slack integration via environment variable
+os.environ["DISABLE_SLACK"] = "true"  # Slack endpoints will return 404
 
 app = FastAPI()
 app.dependency_overrides[get_agent_placeholder] = lambda: YourAgent()
@@ -128,14 +126,15 @@ app.include_router(router)
 
 ### Environment Variables
 
-Configure platform integrations via environment variables:
+Configure Slack integration via environment variables:
 
 ```bash
-# Slack configuration
-export SLACK_SIGNING_SECRET="your-slack-signing-secret"
+# Required for Slack integration
+export SLACK_BOT_TOKEN="xoxb-your-bot-token"
+export SLACK_SIGNING_SECRET="your-signing-secret"
 
-# Discord configuration
-export DISCORD_PUBLIC_KEY="your-discord-public-key"
+# Optional: Disable Slack integration
+export DISABLE_SLACK="true"
 ```
 
 ### Platform Setup
@@ -152,16 +151,8 @@ export DISCORD_PUBLIC_KEY="your-discord-public-key"
 4. Configure Event Subscriptions URL: `https://your-domain.com/agent/slack/events`
 5. Subscribe to bot events:
    - `app_mention` - When your bot is mentioned
-   - `message.im` - Direct messages to your bot
-6. For slash commands, use: `https://your-domain.com/agent/slack/commands`
-7. For interactive components, use: `https://your-domain.com/agent/slack/interactions`
-
-#### Discord Setup
-
-1. Create Discord Application at https://discord.com/developers/applications
-2. Get your Public Key from General Information
-3. Set environment variable: `DISCORD_PUBLIC_KEY`
-4. Set Interactions Endpoint URL: `https://your-domain.com/agent/discord/interactions`
+   - `message.im` - Direct messages to your bot (optional)
+6. For interactive components and slash commands, use the same URL: `https://your-domain.com/agent/slack/events`
 
 ## Agent Protocol
 
@@ -189,10 +180,8 @@ The method should yield response events. For Vertex AI ADK, events have a `conte
 
 #### `fastapi_agentrouter.router`
 
-Pre-configured APIRouter with all platform endpoints:
-- `/agent/slack/` - Slack integration endpoints
-- `/agent/discord/` - Discord integration endpoints
-- `/agent/webhook` - Generic webhook endpoint
+Pre-configured APIRouter with Slack integration:
+- `/agent/slack/events` - Main Slack event handler
 
 #### `fastapi_agentrouter.get_agent_placeholder`
 
@@ -203,9 +192,9 @@ app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = your_get_a
 
 ### Environment Variables
 
+- `SLACK_BOT_TOKEN` - Slack Bot User OAuth Token (required)
+- `SLACK_SIGNING_SECRET` - Slack Signing Secret (required)
 - `DISABLE_SLACK=true` - Disable Slack endpoints (return 404)
-- `DISABLE_DISCORD=true` - Disable Discord endpoints (return 404)
-- `DISABLE_WEBHOOK=true` - Disable webhook endpoint (return 404)
 
 ### Webhook Endpoint
 
