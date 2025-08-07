@@ -1,6 +1,5 @@
 """Tests for Slack integration."""
 
-import os
 from unittest.mock import AsyncMock, Mock, patch
 
 from fastapi import FastAPI
@@ -8,6 +7,10 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
 from fastapi_agentrouter.core.settings import settings
+from fastapi_agentrouter.integrations.slack.settings import (
+    SlackSettings,
+    reset_settings,
+)
 
 
 def test_slack_disabled(monkeypatch):
@@ -34,32 +37,44 @@ def test_slack_disabled(monkeypatch):
     assert "Slack integration is not enabled" in response.json()["detail"]
 
 
-def test_slack_events_missing_env_vars(test_client: TestClient):
+def test_slack_events_missing_env_vars(test_client: TestClient, monkeypatch):
     """Test Slack events endpoint without required environment variables."""
-    # Temporarily remove env vars if they exist
-    bot_token = os.environ.pop("SLACK_BOT_TOKEN", None)
-    signing_secret = os.environ.pop("SLACK_SIGNING_SECRET", None)
+    # Reset settings and patch to have no tokens
+    reset_settings()
+    from fastapi_agentrouter.integrations.slack import settings as slack_settings_module
+    monkeypatch.setattr(
+        slack_settings_module,
+        "get_slack_settings",
+        lambda: SlackSettings(
+            slack_bot_token=None,
+            slack_signing_secret=None,
+        ),
+    )
 
-    try:
-        response = test_client.post(
-            "/agent/slack/events",
-            json={"type": "url_verification", "challenge": "test_challenge"},
-        )
-        assert response.status_code == 500
-        assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
-    finally:
-        # Restore env vars if they existed
-        if bot_token:
-            os.environ["SLACK_BOT_TOKEN"] = bot_token
-        if signing_secret:
-            os.environ["SLACK_SIGNING_SECRET"] = signing_secret
+    response = test_client.post(
+        "/agent/slack/events",
+        json={"type": "url_verification", "challenge": "test_challenge"},
+    )
+    assert response.status_code == 500
+    assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
 
 
-def test_slack_events_endpoint(test_client: TestClient):
+def test_slack_events_endpoint(test_client: TestClient, monkeypatch):
     """Test the Slack events endpoint with mocked dependencies."""
-    # Set required environment variables
-    os.environ["SLACK_BOT_TOKEN"] = "xoxb-test-token"
-    os.environ["SLACK_SIGNING_SECRET"] = "test-signing-secret"
+    # Reset settings and patch with test values
+    reset_settings()
+    # Patch the import in settings module
+    from fastapi_agentrouter.integrations.slack import settings as slack_settings_module
+    monkeypatch.setattr(
+        slack_settings_module,
+        "get_slack_settings",
+        lambda: SlackSettings(
+            slack_bot_token="xoxb-test-token",
+            slack_signing_secret="test-signing-secret",
+            slack_token_verification=False,
+            slack_request_verification=False,
+        ),
+    )
 
     with (
         patch("slack_bolt.adapter.fastapi.SlackRequestHandler") as mock_handler_class,
@@ -86,14 +101,16 @@ def test_slack_events_endpoint(test_client: TestClient):
                     },
                 },
             )
+            # Check if there's an error message  
+            if response.status_code == 500:
+                print(f"Error response: {response.json()}")
             assert response.status_code == 200
         finally:
-            # Clean up
-            del os.environ["SLACK_BOT_TOKEN"]
-            del os.environ["SLACK_SIGNING_SECRET"]
+            # Reset settings for other tests
+            reset_settings()
 
 
-def test_slack_missing_library():
+def test_slack_missing_library(monkeypatch):
     """Test error when slack-bolt is not installed."""
 
     def get_agent():
@@ -108,9 +125,17 @@ def test_slack_missing_library():
     app.include_router(router)
     client = TestClient(app)
 
-    # Set required environment variables
-    os.environ["SLACK_BOT_TOKEN"] = "xoxb-test-token"
-    os.environ["SLACK_SIGNING_SECRET"] = "test-signing-secret"
+    # Reset settings and patch with test values
+    reset_settings()
+    from fastapi_agentrouter.integrations.slack import settings as slack_settings_module
+    monkeypatch.setattr(
+        slack_settings_module,
+        "get_slack_settings",
+        lambda: SlackSettings(
+            slack_bot_token="xoxb-test-token",
+            slack_signing_secret="test-signing-secret",
+        ),
+    )
 
     try:
         # Mock the import to fail when trying to import slack_bolt
@@ -131,6 +156,5 @@ def test_slack_missing_library():
             assert response.status_code == 500
             assert "slack-bolt is required" in response.json()["detail"]
     finally:
-        # Clean up
-        del os.environ["SLACK_BOT_TOKEN"]
-        del os.environ["SLACK_SIGNING_SECRET"]
+        # Reset settings for other tests
+        reset_settings()
