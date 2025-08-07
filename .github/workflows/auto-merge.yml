@@ -1,0 +1,87 @@
+name: Auto Approve and Merge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+  check_suite:
+    types: [completed]
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  auto-approve:
+    name: Auto Approve PR
+    runs-on: ubuntu-latest
+    # PRの作成者がchanyou0311であることを確認
+    if: github.event.pull_request.user.login == 'chanyou0311'
+    steps:
+      - name: Approve PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-merge:
+    name: Auto Merge PR
+    runs-on: ubuntu-latest
+    needs: auto-approve
+    # PRの作成者がchanyou0311かつ、auto-mergeが有効になっていることを確認
+    if: |
+      github.event.pull_request.user.login == 'chanyou0311' &&
+      github.event.pull_request.auto_merge != null
+    steps:
+      - name: Check CI Status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            
+            // PRのチェック状態を取得
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number
+            });
+            
+            // マージ可能な状態かチェック
+            if (pr.mergeable_state !== 'clean') {
+              core.info(`PR is not in a clean mergeable state: ${pr.mergeable_state}`);
+              return;
+            }
+            
+            // すべてのステータスチェックが成功しているか確認
+            const { data: checkRuns } = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: pr.head.sha
+            });
+            
+            const allChecksPassed = checkRuns.check_runs.every(
+              check => check.status === 'completed' && 
+                      (check.conclusion === 'success' || check.conclusion === 'skipped')
+            );
+            
+            if (!allChecksPassed) {
+              core.info('Not all checks have passed yet');
+              return;
+            }
+            
+            // 自動マージを実行
+            try {
+              await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number,
+                merge_method: 'squash'
+              });
+              core.info('Successfully merged PR');
+            } catch (error) {
+              core.warning(`Failed to merge PR: ${error.message}`);
+            }
