@@ -330,7 +330,7 @@ After fixing the issue:
 uv run --python 3.9 pytest
 
 # Optionally test all versions before pushing
-for v in 3.9 3.10 3.11 3.12; do 
+for v in 3.9 3.10 3.11 3.12; do
     echo "Testing Python $v..."
     uv run --python $v pytest || break
 done
