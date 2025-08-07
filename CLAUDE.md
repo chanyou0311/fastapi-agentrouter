@@ -284,6 +284,91 @@ The project uses `release-please` for automated releases:
 7. **Keep the integration simple** (2-line goal)
 8. **Document environment variables** clearly
 9. **Ensure files end with a newline** to avoid pre-commit failures
+10. **Handle CI failures systematically** - See "Python Version Compatibility Testing" section above
+
+## 🧪 Python Version Compatibility Testing
+
+### Context
+Local development typically uses Python 3.11, but CI tests against Python 3.9, 3.10, 3.11, and 3.12. Version differences can cause CI failures that pass locally.
+
+### CI Failure Workflow for Claude Code
+
+**IMPORTANT**: When CI fails due to Python version differences, follow this exact workflow:
+
+#### Step 1: Identify Failed CI Jobs
+```bash
+# Get the latest CI run URL from the PR
+gh pr checks --watch  # Shows live CI status
+
+# Or get detailed job information
+gh run list --limit 3  # List recent runs
+gh run view <run-id> --json jobs --jq '.jobs[] | select(.conclusion == "failure") | {name: .name, conclusion: .conclusion}'
+```
+
+#### Step 2: View Failure Details
+```bash
+# Get the specific error from failed job
+gh run view <run-id> --log-failed
+
+# Or view specific job log
+gh run view <run-id> --job <job-id> --log
+```
+
+#### Step 3: Reproduce Locally
+```bash
+# If Python 3.9 failed in CI, test locally with that version
+uv run --python 3.9 pytest -xvs  # -x stops at first failure, -v verbose, -s shows print statements
+
+# For specific test that failed
+uv run --python 3.9 pytest tests/test_specific.py::TestClass::test_method -xvs
+```
+
+#### Step 4: Fix and Verify
+After fixing the issue:
+```bash
+# Test with the previously failed version
+uv run --python 3.9 pytest
+
+# Optionally test all versions before pushing
+for v in 3.9 3.10 3.11 3.12; do
+    echo "Testing Python $v..."
+    uv run --python $v pytest || break
+done
+```
+
+#### Step 5: Push Fix and Monitor
+```bash
+# Push the fix
+git add -A
+git commit -m "fix: Python 3.9 compatibility issue"
+git push
+
+# Watch CI status
+gh pr checks --watch
+```
+
+### Quick Commands Reference
+
+```bash
+# Test with specific Python version
+uv run --python 3.9 pytest    # Run all tests with Python 3.9
+uv run --python 3.10 pytest   # Run all tests with Python 3.10
+uv run --python 3.11 pytest   # Run all tests with Python 3.11
+uv run --python 3.12 pytest   # Run all tests with Python 3.12
+
+# Check which Python versions are available locally
+uv python list | grep -v "download available"
+
+# Install missing Python version if needed
+uv python install 3.9  # Install Python 3.9 if not available
+```
+
+### Best Practices
+
+1. **Default testing**: Use `pytest` with your default Python (usually 3.11)
+2. **After CI failure**: ALWAYS reproduce with the exact failed Python version
+3. **Before final PR push**: Consider testing with `uv run --python 3.9 pytest` (oldest supported)
+4. **Monitor CI**: Use `gh pr checks --watch` to see real-time CI status
 
 ## 🐛 Known Issues
 
