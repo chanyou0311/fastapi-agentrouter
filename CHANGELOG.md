@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.2.0...v0.3.0) (2025-08-07)
+
+
+### Features
+
+* MkDocsドキュメントにi18n対応を追加 ([#24](https://github.com/chanyou0311/fastapi-agentrouter/issues/24)) ([75f412c](https://github.com/chanyou0311/fastapi-agentrouter/commit/75f412c31bd543e4e9c6a0eb827e30690a31f0ce))
+
+
+### Bug Fixes
+
+* Remove incorrect Discord and webhook references from CLAUDE.md ([#23](https://github.com/chanyou0311/fastapi-agentrouter/issues/23)) ([9b28e3b](https://github.com/chanyou0311/fastapi-agentrouter/commit/9b28e3b2f661fa0cd4306dd455f3bbc6df7d5c2a))
+
+
+### Documentation
+
+* add Python version compatibility testing workflow ([#16](https://github.com/chanyou0311/fastapi-agentrouter/issues/16)) ([e51f473](https://github.com/chanyou0311/fastapi-agentrouter/commit/e51f473bd7997e55c3b94f33340845a3bacc25c0))
+
 ## [0.2.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.1.2...v0.2.0) (2025-08-07)
 
 
