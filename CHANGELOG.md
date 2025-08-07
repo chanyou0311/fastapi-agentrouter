@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.1.2...v0.2.0) (2025-08-07)
+
+
+### Features
+
+* implement Slack integration with Slack Bolt for Python ([#13](https://github.com/chanyou0311/fastapi-agentrouter/issues/13)) ([620090f](https://github.com/chanyou0311/fastapi-agentrouter/commit/620090f0f575eb11fd529f0a815f0980e37728c3))
+* migrate environment variables to pydantic-settings ([#14](https://github.com/chanyou0311/fastapi-agentrouter/issues/14)) ([011ea3b](https://github.com/chanyou0311/fastapi-agentrouter/commit/011ea3b298762b6c27a78586f0f94a966a86bff5))
+
+
+### Bug Fixes
+
+* add 'synchronize' event to PR linting workflow ([#11](https://github.com/chanyou0311/fastapi-agentrouter/issues/11)) ([858fcce](https://github.com/chanyou0311/fastapi-agentrouter/commit/858fcce5e29eb5d4c49aaa5f81a6caeb5dc4f240))
+* change MkDocs theme color from blue to teal ([#15](https://github.com/chanyou0311/fastapi-agentrouter/issues/15)) ([08d9af4](https://github.com/chanyou0311/fastapi-agentrouter/commit/08d9af4d828a4d646f6ede4df6c286776bbd9dc4))
+
 ## [0.1.2](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.1.1...v0.1.2) (2025-08-06)
 
 
