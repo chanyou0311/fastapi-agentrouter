@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.3.0...v1.0.0) (2025-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Changed disable_slack to enable_slack (inverted logic)
+
+### Code Refactoring
+
+* improve settings configuration with dependency injection ([#25](https://github.com/chanyou0311/fastapi-agentrouter/issues/25)) ([ae18e7b](https://github.com/chanyou0311/fastapi-agentrouter/commit/ae18e7bf5e040e3a90247af70c841db91ab5a1f1))
+
 ## [0.3.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.2.0...v0.3.0) (2025-08-07)
 
 
