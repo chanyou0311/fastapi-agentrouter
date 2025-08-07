@@ -7,11 +7,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
+from fastapi_agentrouter.core.settings import settings
 
 
-def test_slack_disabled():
+def test_slack_disabled(monkeypatch):
     """Test Slack endpoint when disabled."""
-    os.environ["DISABLE_SLACK"] = "true"
+    monkeypatch.setattr(settings, "disable_slack", True)
 
     def get_agent():
         class Agent:
@@ -31,9 +32,6 @@ def test_slack_disabled():
     )
     assert response.status_code == 404
     assert "Slack integration is not enabled" in response.json()["detail"]
-
-    # Clean up
-    del os.environ["DISABLE_SLACK"]
 
 
 def test_slack_events_missing_env_vars(test_client: TestClient):

@@ -126,7 +126,7 @@ app.include_router(router)
 
 ### Environment Variables
 
-Configure Slack integration via environment variables:
+Configure Slack integration via environment variables using [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/):
 
 ```bash
 # Required for Slack integration
@@ -192,13 +192,14 @@ app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = your_get_a
 
 ### Environment Variables
 
+The library uses [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) for configuration management:
+
 - `SLACK_BOT_TOKEN` - Slack Bot User OAuth Token (required)
 - `SLACK_SIGNING_SECRET` - Slack Signing Secret (required)
 - `DISABLE_SLACK=true` - Disable Slack endpoints (return 404)
 
-### Webhook Endpoint
+See the [Configuration Guide](https://chanyou0311.github.io/fastapi-agentrouter/getting-started/configuration/) for detailed documentation on all available settings.
 
-**POST** `/agent/webhook`
 
 Request body:
 ```json

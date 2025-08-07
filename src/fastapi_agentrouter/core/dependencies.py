@@ -1,4 +1,4 @@
-"""Shared dependencies for FastAPI AgentRouter."""
+"""Core dependencies for FastAPI AgentRouter."""
 
 from typing import Annotated, Any, Optional, Protocol
 

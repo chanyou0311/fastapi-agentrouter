@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from ...dependencies import Agent
+from ...core.dependencies import Agent
 from .dependencies import check_slack_enabled
 
 if TYPE_CHECKING:
