@@ -11,25 +11,50 @@ This guide is for future Claude instances working on the fastapi-agentrouter pro
 3. **Docstrings** - Update class and function docstrings for API documentation
 4. **Type hints** - Ensure all public APIs have proper type annotations
 
-### MkDocs Structure
+### MkDocs Structure (i18n-enabled)
 ```
 docs/
-├── index.md                        # Home page (mirrors README)
-├── getting-started/
-│   ├── installation.md            # Installation instructions
-│   ├── quickstart.md              # Quick start guide
-│   └── configuration.md           # Environment variables and setup
-├── integrations/
-│   └── slack.md                   # Slack-specific setup and usage
-├── api/
-│   ├── core.md                    # Core API reference
-│   └── integrations.md            # Platform integrations API
-├── examples/
-│   ├── basic.md                   # Basic usage examples
-│   └── advanced.md                # Advanced patterns
-├── contributing.md                # Contribution guidelines
-└── changelog.md                   # Release notes
+├── en/                             # English documentation (default)
+│   ├── index.md                   # Home page (mirrors README)
+│   ├── getting-started/
+│   │   ├── installation.md        # Installation instructions
+│   │   ├── quickstart.md          # Quick start guide
+│   │   └── configuration.md       # Environment variables and setup
+│   ├── integrations/
+│   │   └── slack.md               # Slack-specific setup and usage
+│   ├── api/
+│   │   ├── core.md                # Core API reference
+│   │   └── integrations.md        # Platform integrations API
+│   ├── examples/
+│   │   ├── basic.md               # Basic usage examples
+│   │   └── advanced.md            # Advanced patterns
+│   ├── contributing.md            # Contribution guidelines
+│   └── changelog.md               # Release notes
+├── ja/                             # Japanese documentation
+│   ├── index.md                   # ホームページ
+│   ├── getting-started/
+│   │   ├── installation.md        # インストール手順
+│   │   ├── quickstart.md          # クイックスタートガイド
+│   │   └── configuration.md       # 環境変数と設定
+│   ├── integrations/
+│   │   └── slack.md               # Slack統合ガイド
+│   ├── api/
+│   │   ├── core.md                # コアAPIリファレンス
+│   │   └── integrations.md        # 統合API
+│   ├── examples/
+│   │   ├── basic.md               # 基本的なサンプル
+│   │   └── advanced.md            # 高度なサンプル
+│   ├── contributing.md            # コントリビューション
+│   └── changelog.md               # 変更履歴
+└── [future languages]/             # Additional languages can be added
 ```
+
+### i18n Configuration
+The documentation uses `mkdocs-static-i18n` plugin for internationalization:
+- **Default language**: English (`en`)
+- **Supported languages**: English, Japanese (`ja`)
+- **Folder structure**: Each language has its own folder under `docs/`
+- **URL structure**: `/` for English, `/ja/` for Japanese
 
 ## 🏗️ Project Architecture
 
@@ -80,11 +105,14 @@ mypy src
 # Run pre-commit hooks
 pre-commit run --all-files
 
-# Build and serve documentation locally
-mkdocs serve
+# Build and serve documentation locally (with i18n)
+mkdocs serve  # Access at http://localhost:8000 (English) and http://localhost:8000/ja/ (Japanese)
 
-# Build documentation
+# Build documentation (builds all languages)
 mkdocs build
+
+# Test specific language
+mkdocs serve --config-file mkdocs.yml  # Then navigate to /ja/ for Japanese
 ```
 
 ### CI/CD Pipeline
@@ -128,13 +156,20 @@ Disabled endpoints return 404 with appropriate error messages.
 
 ## ⚠️ Common Pitfalls
 
-### 1. Documentation Sync
+### 1. Documentation Sync (Multi-language)
 **Problem**: Code changes without updating docs
 **Solution**: Always update:
 - README.md examples
-- MkDocs pages in `docs/`
-- API reference documentation
-- Docstrings
+- MkDocs pages in `docs/en/` for English
+- **IMPORTANT**: Also update `docs/ja/` for Japanese translations
+- API reference documentation in both languages
+- Docstrings (English only, as they're in code)
+
+**i18n-specific notes**:
+- When adding new documentation pages, create them in BOTH `en/` and `ja/` folders
+- When modifying existing docs, update BOTH language versions
+- Keep the same file structure in all language folders
+- Japanese translations should maintain technical accuracy while being natural
 
 ### 2. Test Structure
 **Problem**: Tests not matching code structure
@@ -268,14 +303,16 @@ The project uses `release-please` for automated releases:
 
 1. **Always run pre-commit** before pushing
 2. **Update docs immediately** when changing APIs
-3. **Follow existing patterns** in the codebase
-4. **Write tests first** for new features
-5. **Check CI status** before marking PR ready
-6. **Use mock implementations** for platform endpoints
-7. **Keep the integration simple** (2-line goal)
-8. **Document environment variables** clearly
-9. **Ensure files end with a newline** to avoid pre-commit failures
-10. **Handle CI failures systematically** - See "Python Version Compatibility Testing" section above
+3. **Update BOTH language versions** when modifying documentation (en/ and ja/)
+4. **Follow existing patterns** in the codebase
+5. **Write tests first** for new features
+6. **Check CI status** before marking PR ready
+7. **Use mock implementations** for platform endpoints
+8. **Keep the integration simple** (2-line goal)
+9. **Document environment variables** clearly
+10. **Ensure files end with a newline** to avoid pre-commit failures
+11. **Handle CI failures systematically** - See "Python Version Compatibility Testing" section above
+12. **Maintain i18n consistency** - Same structure and content coverage across languages
 
 ## 🧪 Python Version Compatibility Testing
 
@@ -361,11 +398,47 @@ uv python install 3.9  # Install Python 3.9 if not available
 3. **Before final PR push**: Consider testing with `uv run --python 3.9 pytest` (oldest supported)
 4. **Monitor CI**: Use `gh pr checks --watch` to see real-time CI status
 
+## 🌐 i18n Maintenance Guide
+
+### Adding New Documentation
+When adding new documentation files:
+1. Create the file in `docs/en/` first (English)
+2. Copy the file to `docs/ja/` and translate it
+3. Maintain the same file name and path structure
+4. Update both versions when making changes
+
+### Translation Guidelines
+- **Technical terms**: Keep widely-used English terms (API, FastAPI, webhook, etc.)
+- **Code examples**: Keep code blocks in English (comments can be translated)
+- **File paths**: Keep as-is, don't translate
+- **URLs**: Keep as-is
+- **Consistency**: Use consistent translations for recurring terms
+
+### Testing i18n
+```bash
+# Install documentation dependencies
+uv sync --extra docs
+
+# Serve documentation locally
+uv run mkdocs serve
+
+# Test English version at http://localhost:8000
+# Test Japanese version at http://localhost:8000/ja/
+```
+
+### Adding New Languages
+To add a new language (e.g., Chinese):
+1. Add the language to `mkdocs.yml` under `plugins.i18n.languages`
+2. Create a new folder `docs/zh/` with the same structure as `docs/en/`
+3. Translate all documentation files
+4. Test the new language locally
+
 ## 🐛 Known Issues
 
 - Codecov integration is disabled (to be enabled later)
 - Documentation deployment needs GitHub Pages setup
 - Example applications need expansion
+- i18n: Some documentation pages (examples, API reference) are placeholders waiting for content
 
 ## 📮 Contact
 

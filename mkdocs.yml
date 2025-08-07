@@ -51,6 +51,16 @@ theme:
 
 plugins:
   - search
+  - i18n:
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: ja
+          name: 日本語
+          build: true
+      docs_structure: folder
   - mkdocstrings:
       handlers:
         python:
