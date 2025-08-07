@@ -12,7 +12,6 @@ nav:
     - Configuration: getting-started/configuration.md
   - Integrations:
     - Slack: integrations/slack.md
-    - Discord: integrations/discord.md
   - API Reference:
     - Core: api/core.md
     - Integrations: api/integrations.md
