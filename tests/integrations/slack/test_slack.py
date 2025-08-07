@@ -1,6 +1,5 @@
 """Tests for Slack integration."""
 
-import json
 import os
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -9,13 +8,6 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
 from fastapi_agentrouter.core.settings import settings
-
-
-def test_slack_status_endpoint(test_client: TestClient):
-    """Test the Slack status endpoint."""
-    response = test_client.get("/agent/slack/")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok", "platform": "slack"}
 
 
 def test_slack_disabled(monkeypatch):
@@ -34,7 +26,10 @@ def test_slack_disabled(monkeypatch):
     app.include_router(router)
     client = TestClient(app)
 
-    response = client.get("/agent/slack/")
+    response = client.post(
+        "/agent/slack/events",
+        json={"type": "url_verification", "challenge": "test"},
+    )
     assert response.status_code == 404
     assert "Slack integration is not enabled" in response.json()["detail"]
 
@@ -89,72 +84,6 @@ def test_slack_events_endpoint(
                     "text": "Hello bot!",
                     "user": "U123456",
                 },
-            },
-        )
-        assert response.status_code == 200
-    finally:
-        # Clean up
-        del os.environ["SLACK_BOT_TOKEN"]
-        del os.environ["SLACK_SIGNING_SECRET"]
-
-
-@patch("fastapi_agentrouter.integrations.slack.router.get_slack_app")
-@patch("slack_bolt.adapter.fastapi.SlackRequestHandler")
-def test_slack_interactions_endpoint(
-    mock_handler_class, mock_get_app, test_client: TestClient
-):
-    """Test the Slack interactions endpoint."""
-    # Set required environment variables
-    os.environ["SLACK_BOT_TOKEN"] = "xoxb-test-token"
-    os.environ["SLACK_SIGNING_SECRET"] = "test-signing-secret"
-
-    # Mock the handler
-    mock_handler = Mock()
-    mock_handler.handle = AsyncMock(return_value={"ok": True})
-    mock_handler_class.return_value = mock_handler
-
-    # Mock the Slack app
-    mock_app = Mock()
-    mock_get_app.return_value = mock_app
-
-    try:
-        response = test_client.post(
-            "/agent/slack/interactions",
-            data={"payload": json.dumps({"type": "block_actions"})},
-        )
-        assert response.status_code == 200
-    finally:
-        # Clean up
-        del os.environ["SLACK_BOT_TOKEN"]
-        del os.environ["SLACK_SIGNING_SECRET"]
-
-
-@patch("fastapi_agentrouter.integrations.slack.router.get_slack_app")
-@patch("slack_bolt.adapter.fastapi.SlackRequestHandler")
-def test_slack_commands_endpoint(
-    mock_handler_class, mock_get_app, test_client: TestClient
-):
-    """Test the Slack commands endpoint."""
-    # Set required environment variables
-    os.environ["SLACK_BOT_TOKEN"] = "xoxb-test-token"
-    os.environ["SLACK_SIGNING_SECRET"] = "test-signing-secret"
-
-    # Mock the handler
-    mock_handler = Mock()
-    mock_handler.handle = AsyncMock(return_value={"ok": True})
-    mock_handler_class.return_value = mock_handler
-
-    # Mock the Slack app
-    mock_app = Mock()
-    mock_get_app.return_value = mock_app
-
-    try:
-        response = test_client.post(
-            "/agent/slack/commands",
-            data={
-                "command": "/test",
-                "text": "hello",
-                "user_id": "U123456",
             },
         )
         assert response.status_code == 200

@@ -5,7 +5,6 @@ import os
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
 
 from ...core.dependencies import Agent
 from .dependencies import check_slack_enabled
@@ -46,10 +45,20 @@ def get_slack_app(agent: Agent) -> "App":
         )
 
     # Create Slack app instance
+    # Disable verification in test environment
+    token_verification = (
+        os.environ.get("SLACK_TOKEN_VERIFICATION", "true").lower() == "true"
+    )
+    request_verification = (
+        os.environ.get("SLACK_REQUEST_VERIFICATION", "true").lower() == "true"
+    )
+
     slack_app = App(
         token=slack_bot_token,
         signing_secret=slack_signing_secret,
         process_before_response=True,  # For serverless environments
+        token_verification_enabled=token_verification,
+        request_verification_enabled=request_verification,
     )
 
     # Define event handlers with lazy listeners
@@ -199,57 +208,11 @@ def get_slack_request_handler(agent: Agent) -> Any:
     return SlackRequestHandler(slack_app)
 
 
-@router.get("/", dependencies=[Depends(check_slack_enabled)])
-async def slack_status() -> JSONResponse:
-    """Slack endpoint status."""
-    return JSONResponse(content={"status": "ok", "platform": "slack"})
-
-
 @router.post("/events", dependencies=[Depends(check_slack_enabled)])
 async def slack_events(
     request: Request,
     agent: Agent,
 ) -> Any:
     """Handle Slack events and interactions."""
-    handler = get_slack_request_handler(agent)
-    return await handler.handle(request)
-
-
-@router.post("/interactions", dependencies=[Depends(check_slack_enabled)])
-async def slack_interactions(
-    request: Request,
-    agent: Agent,
-) -> Any:
-    """Handle Slack interactive components (buttons, select menus, etc.)."""
-    handler = get_slack_request_handler(agent)
-    return await handler.handle(request)
-
-
-@router.post("/commands", dependencies=[Depends(check_slack_enabled)])
-async def slack_commands(
-    request: Request,
-    agent: Agent,
-) -> Any:
-    """Handle Slack slash commands."""
-    handler = get_slack_request_handler(agent)
-    return await handler.handle(request)
-
-
-@router.get("/install", dependencies=[Depends(check_slack_enabled)])
-async def slack_install(
-    request: Request,
-    agent: Agent,
-) -> Any:
-    """Handle Slack OAuth installation flow."""
-    handler = get_slack_request_handler(agent)
-    return await handler.handle(request)
-
-
-@router.get("/oauth_redirect", dependencies=[Depends(check_slack_enabled)])
-async def slack_oauth_redirect(
-    request: Request,
-    agent: Agent,
-) -> Any:
-    """Handle Slack OAuth redirect."""
     handler = get_slack_request_handler(agent)
     return await handler.handle(request)

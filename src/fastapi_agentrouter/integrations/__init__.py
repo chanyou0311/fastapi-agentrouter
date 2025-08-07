@@ -1,5 +1,5 @@
 """Integration modules for FastAPI AgentRouter."""
 
-from . import discord, slack, webhook
+from . import slack
 
-__all__ = ["discord", "slack", "webhook"]
+__all__ = ["slack"]

@@ -41,10 +41,20 @@ pip install fastapi-agentrouter[slack]
    - Set Request URL: `https://your-domain.com/agent/slack/events`
    - Subscribe to bot events:
      - `app_mention` - When your app is mentioned
-     - `message.im` - Direct messages to your app
+     - `message.im` - Direct messages to your app (optional)
    - Save changes
 
-4. **Get Signing Secret**
+4. **Configure Interactivity & Shortcuts** (if using interactive components)
+   - Enable Interactivity
+   - Set Request URL: `https://your-domain.com/agent/slack/events`
+   - Save changes
+
+5. **Configure Slash Commands** (if using commands)
+   - Create New Command
+   - Set Request URL: `https://your-domain.com/agent/slack/events`
+   - Save
+
+6. **Get Signing Secret**
    - Go to Basic Information
    - Copy the **Signing Secret**
 
@@ -79,18 +89,13 @@ app.dependency_overrides[get_agent_placeholder] = lambda: MyAgent()
 app.include_router(router)
 ```
 
-## Endpoints
+## Endpoint
 
-The Slack integration provides the following endpoints:
+The Slack integration provides a single endpoint:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/agent/slack/` | GET | Status check endpoint |
-| `/agent/slack/events` | POST | Main event handler for Slack events |
-| `/agent/slack/interactions` | POST | Handle interactive components |
-| `/agent/slack/commands` | POST | Handle slash commands |
-| `/agent/slack/install` | GET | OAuth installation flow |
-| `/agent/slack/oauth_redirect` | GET | OAuth redirect handler |
+| `/agent/slack/events` | POST | Handle all Slack events, interactions, and commands |
 
 ## Event Handling
 
