@@ -55,42 +55,42 @@ def test_slack_events_missing_env_vars(test_client: TestClient):
             os.environ["SLACK_SIGNING_SECRET"] = signing_secret
 
 
-@patch("fastapi_agentrouter.integrations.slack.router.get_slack_app")
-@patch("slack_bolt.adapter.fastapi.SlackRequestHandler")
-def test_slack_events_endpoint(
-    mock_handler_class, mock_get_app, test_client: TestClient
-):
+def test_slack_events_endpoint(test_client: TestClient):
     """Test the Slack events endpoint with mocked dependencies."""
     # Set required environment variables
     os.environ["SLACK_BOT_TOKEN"] = "xoxb-test-token"
     os.environ["SLACK_SIGNING_SECRET"] = "test-signing-secret"
 
-    # Mock the handler
-    mock_handler = Mock()
-    mock_handler.handle = AsyncMock(return_value={"ok": True})
-    mock_handler_class.return_value = mock_handler
+    with (
+        patch("slack_bolt.adapter.fastapi.SlackRequestHandler") as mock_handler_class,
+        patch("slack_bolt.App") as mock_app_class,
+    ):
+        # Mock the handler
+        mock_handler = Mock()
+        mock_handler.handle = AsyncMock(return_value={"ok": True})
+        mock_handler_class.return_value = mock_handler
 
-    # Mock the Slack app
-    mock_app = Mock()
-    mock_get_app.return_value = mock_app
+        # Mock the Slack app
+        mock_app = Mock()
+        mock_app_class.return_value = mock_app
 
-    try:
-        response = test_client.post(
-            "/agent/slack/events",
-            json={
-                "type": "event_callback",
-                "event": {
-                    "type": "app_mention",
-                    "text": "Hello bot!",
-                    "user": "U123456",
+        try:
+            response = test_client.post(
+                "/agent/slack/events",
+                json={
+                    "type": "event_callback",
+                    "event": {
+                        "type": "app_mention",
+                        "text": "Hello bot!",
+                        "user": "U123456",
+                    },
                 },
-            },
-        )
-        assert response.status_code == 200
-    finally:
-        # Clean up
-        del os.environ["SLACK_BOT_TOKEN"]
-        del os.environ["SLACK_SIGNING_SECRET"]
+            )
+            assert response.status_code == 200
+        finally:
+            # Clean up
+            del os.environ["SLACK_BOT_TOKEN"]
+            del os.environ["SLACK_SIGNING_SECRET"]
 
 
 def test_slack_missing_library():
