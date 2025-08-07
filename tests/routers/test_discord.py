@@ -1,11 +1,10 @@
 """Tests for Discord router."""
 
-import os
-
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
+from fastapi_agentrouter.settings import settings
 
 
 def test_discord_status_endpoint(test_client: TestClient):
@@ -15,9 +14,9 @@ def test_discord_status_endpoint(test_client: TestClient):
     assert response.json() == {"status": "ok"}
 
 
-def test_discord_disabled():
+def test_discord_disabled(monkeypatch):
     """Test Discord endpoint when disabled."""
-    os.environ["DISABLE_DISCORD"] = "true"
+    monkeypatch.setattr(settings, "disable_discord", True)
 
     def get_agent():
         class Agent:
@@ -34,6 +33,3 @@ def test_discord_disabled():
     response = client.get("/agent/discord/")
     assert response.status_code == 404
     assert "Discord integration is not enabled" in response.json()["detail"]
-
-    # Clean up
-    del os.environ["DISABLE_DISCORD"]

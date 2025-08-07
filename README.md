@@ -125,7 +125,7 @@ app.include_router(
 
 ### Environment Variables
 
-Configure platform integrations via environment variables:
+Configure platform integrations via environment variables using [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/):
 
 ```bash
 # Slack configuration
@@ -193,9 +193,13 @@ app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = your_get_a
 
 ### Environment Variables
 
+The library uses [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) for configuration management:
+
 - `DISABLE_SLACK=true` - Disable Slack endpoints (return 404)
 - `DISABLE_DISCORD=true` - Disable Discord endpoints (return 404)
 - `DISABLE_WEBHOOK=true` - Disable webhook endpoint (return 404)
+
+See the [Configuration Guide](https://chanyou0311.github.io/fastapi-agentrouter/getting-started/configuration/) for detailed documentation on all available settings.
 
 ### Webhook Endpoint
 

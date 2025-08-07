@@ -1,11 +1,10 @@
 """Tests for Slack router."""
 
-import os
-
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
+from fastapi_agentrouter.settings import settings
 
 
 def test_slack_status_endpoint(test_client: TestClient):
@@ -15,9 +14,9 @@ def test_slack_status_endpoint(test_client: TestClient):
     assert response.json() == {"status": "ok"}
 
 
-def test_slack_disabled():
+def test_slack_disabled(monkeypatch):
     """Test Slack endpoint when disabled."""
-    os.environ["DISABLE_SLACK"] = "true"
+    monkeypatch.setattr(settings, "disable_slack", True)
 
     def get_agent():
         class Agent:
@@ -34,6 +33,3 @@ def test_slack_disabled():
     response = client.get("/agent/slack/")
     assert response.status_code == 404
     assert "Slack integration is not enabled" in response.json()["detail"]
-
-    # Clean up
-    del os.environ["DISABLE_SLACK"]

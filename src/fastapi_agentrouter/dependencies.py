@@ -1,9 +1,10 @@
 """Shared dependencies for FastAPI AgentRouter."""
 
-import os
 from typing import Annotated, Any, Optional, Protocol
 
 from fastapi import Depends, HTTPException
+
+from .settings import settings
 
 
 class AgentProtocol(Protocol):
@@ -41,7 +42,7 @@ Agent = Annotated[AgentProtocol, Depends(get_agent_placeholder)]
 
 def check_slack_enabled() -> None:
     """Check if Slack integration is enabled."""
-    if os.getenv("DISABLE_SLACK") == "true":
+    if settings.disable_slack:
         raise HTTPException(
             status_code=404,
             detail="Slack integration is not enabled",
@@ -50,7 +51,7 @@ def check_slack_enabled() -> None:
 
 def check_discord_enabled() -> None:
     """Check if Discord integration is enabled."""
-    if os.getenv("DISABLE_DISCORD") == "true":
+    if settings.disable_discord:
         raise HTTPException(
             status_code=404,
             detail="Discord integration is not enabled",
@@ -59,7 +60,7 @@ def check_discord_enabled() -> None:
 
 def check_webhook_enabled() -> None:
     """Check if webhook endpoint is enabled."""
-    if os.getenv("DISABLE_WEBHOOK") == "true":
+    if settings.disable_webhook:
         raise HTTPException(
             status_code=404,
             detail="Webhook endpoint is not enabled",
