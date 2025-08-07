@@ -20,8 +20,7 @@ docs/
 │   ├── quickstart.md              # Quick start guide
 │   └── configuration.md           # Environment variables and setup
 ├── integrations/
-│   ├── slack.md                   # Slack-specific setup and usage
-│   └── discord.md                 # Discord-specific setup and usage
+│   └── slack.md                   # Slack-specific setup and usage
 ├── api/
 │   ├── core.md                    # Core API reference
 │   └── integrations.md            # Platform integrations API
@@ -39,7 +38,7 @@ The library uses a **Protocol-based dependency injection pattern** with FastAPI'
 
 1. **AgentProtocol** - Defines the interface any agent must implement
 2. **Dependency Injection** - Uses FastAPI's `dependency_overrides` for agent injection
-3. **Modular Routers** - Separate router modules per platform (Slack, Discord, webhook)
+3. **Modular Routers** - Separate router modules per platform (Slack)
 4. **Environment-based Configuration** - Platforms can be disabled via environment variables
 
 ### Directory Structure
@@ -49,9 +48,7 @@ src/fastapi_agentrouter/
 ├── dependencies.py                # Core dependency module with AgentProtocol
 ├── routers/
 │   ├── __init__.py               # Combines all routers with /agent prefix
-│   ├── slack.py                  # Slack endpoints (mock implementation)
-│   ├── discord.py                # Discord endpoints (mock implementation)
-│   └── webhook.py                # Webhook endpoints (mock implementation)
+│   └── slack.py                  # Slack endpoints (mock implementation)
 ```
 
 ### Key Design Decisions
@@ -126,8 +123,6 @@ class AgentProtocol(Protocol):
 ### 3. Platform Enable/Disable
 Platforms can be disabled via environment variables:
 - `DISABLE_SLACK=true`
-- `DISABLE_DISCORD=true`
-- `DISABLE_WEBHOOK=true`
 
 Disabled endpoints return 404 with appropriate error messages.
 
@@ -145,8 +140,6 @@ Disabled endpoints return 404 with appropriate error messages.
 **Problem**: Tests not matching code structure
 **Solution**: Mirror the code structure:
 - `tests/routers/test_slack.py` for `src/fastapi_agentrouter/routers/slack.py`
-- `tests/routers/test_discord.py` for `src/fastapi_agentrouter/routers/discord.py`
-- `tests/routers/test_webhook.py` for `src/fastapi_agentrouter/routers/webhook.py`
 
 ### 3. Import Style
 **Problem**: Using old-style imports (`from typing import Dict`)
@@ -251,9 +244,7 @@ tests/
 ├── test_dependencies.py           # Test dependencies module
 ├── test_router.py                 # Integration tests
 └── routers/
-    ├── test_slack.py             # Slack router tests
-    ├── test_discord.py           # Discord router tests
-    └── test_webhook.py           # Webhook router tests
+    └── test_slack.py             # Slack router tests
 ```
 
 ### Writing Tests
