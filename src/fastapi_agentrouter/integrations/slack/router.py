@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ...core.dependencies import Agent
 from .dependencies import check_slack_enabled
-from .settings import get_slack_settings
+from .settings import SlackSettings, get_slack_settings
 
 if TYPE_CHECKING:
     from slack_bolt import App
@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/slack", tags=["slack"])
 
 
-def get_slack_app(agent: Agent) -> "App":
-    """Create and configure Slack App with agent dependency."""
+def get_slack_app(agent: Agent, settings: SlackSettings) -> "App":
+    """Create and configure Slack App with agent and settings dependencies."""
     try:
         from slack_bolt import App
     except ImportError as e:
@@ -31,9 +31,6 @@ def get_slack_app(agent: Agent) -> "App":
             ),
         ) from e
 
-    # Get settings
-    settings = get_slack_settings()
-    
     if not settings.slack_bot_token or not settings.slack_signing_secret:
         raise HTTPException(
             status_code=500,
@@ -182,8 +179,8 @@ def get_slack_app(agent: Agent) -> "App":
     return slack_app
 
 
-def get_slack_request_handler(agent: Agent) -> Any:
-    """Get Slack request handler with agent dependency."""
+def get_slack_request_handler(agent: Agent, settings: SlackSettings) -> Any:
+    """Get Slack request handler with agent and settings dependencies."""
     try:
         from slack_bolt.adapter.fastapi import SlackRequestHandler
     except ImportError as e:
@@ -195,7 +192,7 @@ def get_slack_request_handler(agent: Agent) -> Any:
             ),
         ) from e
 
-    slack_app = get_slack_app(agent)
+    slack_app = get_slack_app(agent, settings)
     return SlackRequestHandler(slack_app)
 
 
@@ -203,7 +200,8 @@ def get_slack_request_handler(agent: Agent) -> Any:
 async def slack_events(
     request: Request,
     agent: Agent,
+    settings: SlackSettings = Depends(get_slack_settings),
 ) -> Any:
     """Handle Slack events and interactions."""
-    handler = get_slack_request_handler(agent)
+    handler = get_slack_request_handler(agent, settings)
     return await handler.handle(request)

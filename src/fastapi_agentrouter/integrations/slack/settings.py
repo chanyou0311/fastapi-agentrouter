@@ -36,19 +36,6 @@ class SlackSettings(BaseSettings):
     )
 
 
-# Global instance
-_settings: Optional[SlackSettings] = None
-
-
 def get_slack_settings() -> SlackSettings:
-    """Get or create Slack settings instance."""
-    global _settings
-    if _settings is None:
-        _settings = SlackSettings()
-    return _settings
-
-
-def reset_settings() -> None:
-    """Reset settings instance (useful for testing)."""
-    global _settings
-    _settings = None
+    """Get Slack settings instance."""
+    return SlackSettings()
