@@ -57,6 +57,136 @@ That's it! Your agent is now available at:
 
 ## Advanced Usage
 
+### Dependencies with Yield (Resource Management)
+
+Manage resources with automatic cleanup using dependency injection:
+
+```python
+from fastapi import FastAPI, Depends
+from fastapi_agentrouter import router, get_agent_with_cleanup
+import database  # Your database module
+
+def get_agent_with_db():
+    """Agent with database connection cleanup."""
+    db = database.connect()
+    agent = MyAgent(db=db)
+    try:
+        yield agent
+    finally:
+        db.close()
+        agent.cleanup()
+
+app = FastAPI()
+app.dependency_overrides[get_agent_with_cleanup] = get_agent_with_db
+app.include_router(router)
+```
+
+### Enhanced Security & Rate Limiting
+
+Add global security dependencies to all routes:
+
+```python
+from fastapi import FastAPI
+from fastapi_agentrouter import router, get_agent_placeholder, create_security_dependencies
+
+app = FastAPI()
+
+# Add security dependencies globally
+router_with_security = router
+router_with_security.dependencies = create_security_dependencies("slack")
+
+app.dependency_overrides[get_agent_placeholder] = lambda: MyAgent()
+app.include_router(router_with_security)
+
+# Configure via environment variables
+# export ENABLE_RATE_LIMITING=true
+# export SLACK_SIGNING_SECRET=your-secret
+```
+
+### Configuration with Sub-dependencies
+
+Separate configuration from agent creation for better flexibility:
+
+```python
+from fastapi import FastAPI, Depends
+from fastapi_agentrouter import (
+    router,
+    AgentConfig,
+    get_agent_config,
+    create_agent_from_config
+)
+
+def get_custom_config():
+    """Custom configuration provider."""
+    return AgentConfig(
+        model_name="gpt-4",
+        temperature=0.5,
+        enable_cache=True,
+        retry_count=3
+    )
+
+def create_my_agent(config: AgentConfig = Depends(get_agent_config)):
+    """Create agent with injected configuration."""
+    return MyAgent(
+        model=config.model_name,
+        temperature=config.temperature
+    )
+
+app = FastAPI()
+app.dependency_overrides[get_agent_config] = get_custom_config
+app.dependency_overrides[create_agent_from_config] = create_my_agent
+app.include_router(router)
+```
+
+### Class-based Event Handlers
+
+Use class-based handlers for complex stateful operations:
+
+```python
+from fastapi import FastAPI, Depends
+from fastapi_agentrouter import SlackEventHandler, router
+
+@app.post("/slack/advanced")
+async def handle_slack_event(
+    handler: SlackEventHandler = Depends(),
+    event: dict = {}
+):
+    # Handler maintains thread context and channel settings
+    result = await handler.process_event(event)
+
+    # Update channel-specific settings
+    handler.update_channel_settings(event["channel"], {
+        "response_style": "formal"
+    })
+
+    return result
+```
+
+### Testing Utilities
+
+Simplified testing with dependency overrides:
+
+```python
+from fastapi.testclient import TestClient
+from fastapi_agentrouter import (
+    create_test_app,
+    MockAgent,
+    DependencyOverrider,
+    assert_agent_called
+)
+
+def test_agent_integration():
+    app = create_test_app()
+    mock_agent = MockAgent(responses=["Test response"])
+
+    with DependencyOverrider(app).override(get_agent_placeholder, lambda: mock_agent):
+        client = TestClient(app)
+        response = client.post("/agent/query", json={"message": "test"})
+
+        assert response.status_code == 200
+        assert_agent_called(mock_agent, expected_message="test")
+```
+
 ### With Vertex AI Agent Development Kit (ADK)
 
 ```python
@@ -189,6 +319,42 @@ Dependency placeholder that should be overridden with your agent:
 ```python
 app.dependency_overrides[fastapi_agentrouter.get_agent_placeholder] = your_get_agent_function
 ```
+
+### Enhanced Dependencies
+
+#### Resource Management
+- `get_agent_with_cleanup` - Agent dependency with automatic cleanup
+- `get_async_agent_with_cleanup` - Async version with cleanup
+- `ResourceManager` - Manages multiple resources with cleanup
+- `SessionManager` - Manages session state across requests
+
+#### Configuration
+- `AgentConfig` - Configuration model for agents
+- `get_agent_config` - Dependency for agent configuration
+- `create_agent_from_config` - Create agent from configuration
+- `AgentFactory` - Factory for creating multiple agent types
+
+#### Security
+- `RateLimiter` - Simple in-memory rate limiting
+- `SecurityContext` - Security context for requests
+- `create_security_dependencies` - Create security dependency list
+- `check_rate_limit` - Rate limiting dependency
+- `check_api_key` - API key verification dependency
+
+#### Event Handlers
+- `BaseEventHandler` - Base class for event handlers
+- `SlackEventHandler` - Slack-specific handler with state
+- `WebhookEventHandler` - Generic webhook handler with retry
+- `ConversationManager` - Manages conversation history
+
+### Testing Utilities
+
+- `MockAgent` - Mock agent for testing
+- `AsyncMockAgent` - Async mock agent
+- `DependencyOverrider` - Context manager for overriding dependencies
+- `AgentTestCase` - Base test case class with helpers
+- `create_test_app` - Create FastAPI app for testing
+- `assert_agent_called` - Assert agent was called with expected args
 
 ### Environment Variables
 

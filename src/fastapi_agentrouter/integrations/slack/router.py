@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ...core.dependencies import Agent
+from ...core.security import create_security_dependencies
 from .dependencies import check_slack_enabled
 
 if TYPE_CHECKING:
@@ -15,7 +16,11 @@ if TYPE_CHECKING:
 # Set up logger
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/slack", tags=["slack"])
+router = APIRouter(
+    prefix="/slack",
+    tags=["slack"],
+    dependencies=create_security_dependencies("slack"),
+)
 
 
 def get_slack_app(agent: Agent) -> "App":
