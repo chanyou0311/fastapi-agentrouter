@@ -1,6 +1,7 @@
 """Settings management for FastAPI AgentRouter using pydantic-settings."""
 
-from typing import Annotated
+from functools import lru_cache
+from typing import Annotated, Optional
 
 from fastapi import Depends
 from pydantic import Field
@@ -12,6 +13,11 @@ class Settings(BaseSettings):
 
     All settings have sensible defaults and the application works without any
     environment variables set.
+    
+    This class can be used in three ways:
+    1. As a singleton with environment variables (default)
+    2. As a dependency that can be overridden
+    3. As a class dependency for custom instances
     """
 
     model_config = SettingsConfigDict(
@@ -27,27 +33,57 @@ class Settings(BaseSettings):
     )
 
 
-# Create a singleton instance for environment-based settings
-_env_settings = Settings()
-
-
+# Cache the environment-based settings instance
+@lru_cache
 def get_settings() -> Settings:
-    """Get the current settings instance.
+    """Get the cached settings instance from environment.
     
-    This function can be overridden using FastAPI's dependency_overrides
-    to provide custom settings without environment variables.
+    This function is cached to ensure we only create one instance
+    when reading from environment variables.
+    
+    Returns:
+        Settings: The settings instance
     
     Example:
-        from fastapi_agentrouter.core.settings import Settings, get_settings
+        # Basic usage with environment variables
+        settings = get_settings()
         
-        custom_settings = Settings(enable_slack=True)
-        app.dependency_overrides[get_settings] = lambda: custom_settings
+        # Override in FastAPI app for testing
+        app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
     """
-    return _env_settings
+    return Settings()
 
 
-# Dependency type for settings injection
+# Alternative: Class-based dependency for more flexibility
+class SettingsProvider:
+    """Provider for settings that can be easily customized.
+    
+    This allows for more complex dependency injection patterns,
+    including runtime configuration.
+    
+    Example:
+        # Create a custom provider
+        custom_provider = SettingsProvider(Settings(enable_slack=True))
+        app.dependency_overrides[SettingsProvider] = lambda: custom_provider
+    """
+    
+    def __init__(self, settings: Optional[Settings] = None):
+        """Initialize the settings provider.
+        
+        Args:
+            settings: Optional custom settings. If None, uses environment.
+        """
+        self.settings = settings or get_settings()
+    
+    def __call__(self) -> Settings:
+        """Return the settings instance."""
+        return self.settings
+
+
+# Dependency type annotations for clean code
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+SettingsClassDep = Annotated[Settings, Depends(Settings)]  # Direct class dependency
+SettingsProviderDep = Annotated[Settings, Depends(SettingsProvider)]
 
 # For backward compatibility
-settings = _env_settings
+settings = get_settings()
