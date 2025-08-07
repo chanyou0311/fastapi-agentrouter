@@ -1,7 +1,5 @@
 """Settings management for FastAPI AgentRouter using pydantic-settings."""
 
-from typing import Optional
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

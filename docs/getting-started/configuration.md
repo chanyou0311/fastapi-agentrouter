@@ -45,7 +45,7 @@ The settings will be automatically loaded when your application starts.
 You can also access and modify settings programmatically:
 
 ```python
-from fastapi_agentrouter.settings import settings
+from fastapi_agentrouter.core.settings import settings
 
 # Check current settings
 print(f"Slack disabled: {settings.disable_slack}")
@@ -74,11 +74,11 @@ For testing, you can use pytest's `monkeypatch` to override settings:
 
 ```python
 def test_with_slack_disabled(monkeypatch):
-    from fastapi_agentrouter.settings import settings
-    
+    from fastapi_agentrouter.core.settings import settings
+
     # Temporarily disable Slack for this test
     monkeypatch.setattr(settings, "disable_slack", True)
-    
+
     # Your test code here
     response = client.get("/agent/slack/")
     assert response.status_code == 404
