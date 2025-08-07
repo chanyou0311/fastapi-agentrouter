@@ -2,7 +2,7 @@
 
 __version__ = "0.1.2"
 
-from .dependencies import AgentProtocol, get_agent_placeholder
+from .core.dependencies import AgentProtocol, get_agent_placeholder
 from .routers import router
 
 __all__ = [

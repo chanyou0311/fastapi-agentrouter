@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
-from fastapi_agentrouter.settings import settings
+from fastapi_agentrouter.core.settings import settings
 
 
 def test_webhook_status_endpoint(test_client: TestClient):

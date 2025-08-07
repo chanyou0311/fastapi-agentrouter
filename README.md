@@ -34,25 +34,28 @@ pip install "fastapi-agentrouter[all]"        # All platforms
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import router, get_agent_placeholder
 
-# Your agent implementation (e.g., Vertex AI ADK)
-def get_agent():
-    # Return your agent instance
-    # This could be a Vertex AI AdkApp, or any object with stream_query method
-    from vertexai.preview import reasoning_engines
-    return reasoning_engines.AdkApp(agent=your_agent)
+# Your agent implementation
+class MyAgent:
+    def stream_query(self, *, message: str, **kwargs):
+        # Process the message and yield responses
+        yield f"Response to: {message}"
 
 app = FastAPI()
 
-# Simple integration - just one line!
-app.include_router(create_agent_router(get_agent))
+# Two-line integration!
+app.dependency_overrides[get_agent_placeholder] = lambda: MyAgent()
+app.include_router(router)
 ```
 
 That's it! Your agent is now available at:
 - `/agent/webhook` - Generic webhook endpoint
-- `/agent/slack/events` - Slack events and slash commands
-- `/agent/discord/interactions` - Discord interactions
+- `/agent/slack/` - Slack integration endpoints
+  - `/agent/slack/events` - Handle Slack events
+  - `/agent/slack/interactions` - Handle interactive components
+  - `/agent/slack/commands` - Handle slash commands
+- `/agent/discord/` - Discord integration endpoints
 
 ## Advanced Usage
 
@@ -60,7 +63,7 @@ That's it! Your agent is now available at:
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import router, get_agent_placeholder
 from vertexai.preview import reasoning_engines
 from vertexai import Agent
 
@@ -83,14 +86,18 @@ def get_adk_app():
     )
 
 app = FastAPI()
-app.include_router(create_agent_router(get_adk_app))
+app.dependency_overrides[get_agent_placeholder] = get_adk_app
+app.include_router(router)
 ```
 
 ### Custom Agent Implementation
 
 ```python
+from fastapi import FastAPI
+from fastapi_agentrouter import router, get_agent_placeholder
+
 class CustomAgent:
-    def stream_query(self, *, message: str, user_id=None, session_id=None):
+    def stream_query(self, *, message: str, user_id=None, session_id=None, **kwargs):
         # Your custom logic here
         yield f"Response to: {message}"
 
@@ -98,27 +105,23 @@ def get_custom_agent():
     return CustomAgent()
 
 app = FastAPI()
-app.include_router(create_agent_router(get_custom_agent))
+app.dependency_overrides[get_agent_placeholder] = get_custom_agent
+app.include_router(router)
 ```
 
-### Selective Platform Integration
+### Disabling Specific Platforms
 
 ```python
-from fastapi_agentrouter import create_agent_router
+import os
+from fastapi import FastAPI
+from fastapi_agentrouter import router, get_agent_placeholder
 
-# Enable only specific platforms
-def get_agent():
-    return your_agent
+# Disable specific platforms via environment variables
+os.environ["DISABLE_DISCORD"] = "true"  # Discord endpoints will return 404
 
 app = FastAPI()
-app.include_router(
-    create_agent_router(
-        get_agent,
-        enable_slack=True,
-        enable_discord=False,  # Discord will return 404 Not Found
-        enable_webhook=True
-    )
-)
+app.dependency_overrides[get_agent_placeholder] = lambda: YourAgent()
+app.include_router(router)
 ```
 
 ## Configuration
@@ -140,11 +143,18 @@ export DISCORD_PUBLIC_KEY="your-discord-public-key"
 #### Slack Setup
 
 1. Create a Slack App at https://api.slack.com/apps
-2. Get your Signing Secret from Basic Information
-3. Set environment variable: `SLACK_SIGNING_SECRET`
+2. Get your Bot Token and Signing Secret from Basic Information
+3. Set environment variables:
+   ```bash
+   export SLACK_BOT_TOKEN="xoxb-your-bot-token"
+   export SLACK_SIGNING_SECRET="your-signing-secret"
+   ```
 4. Configure Event Subscriptions URL: `https://your-domain.com/agent/slack/events`
-5. Subscribe to events: `message.channels`, `app_mention`, etc.
-6. For slash commands, use the same URL
+5. Subscribe to bot events:
+   - `app_mention` - When your bot is mentioned
+   - `message.im` - Direct messages to your bot
+6. For slash commands, use: `https://your-domain.com/agent/slack/commands`
+7. For interactive components, use: `https://your-domain.com/agent/slack/interactions`
 
 #### Discord Setup
 

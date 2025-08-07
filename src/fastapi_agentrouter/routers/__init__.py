@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter
 
-from .discord import router as discord_router
-from .slack import router as slack_router
-from .webhook import router as webhook_router
+from ..integrations.discord import router as discord_router
+from ..integrations.slack import router as slack_router
+from ..integrations.webhook import router as webhook_router
 
 # Create main router with /agent prefix
 router = APIRouter(prefix="/agent")
