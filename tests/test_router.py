@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
+from fastapi_agentrouter.core.settings import Settings, get_settings
 
 
 def test_router_includes_slack_endpoint(test_client: TestClient):
@@ -53,6 +54,7 @@ def test_complete_integration():
 
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
     app.include_router(router)
     client = TestClient(app)
 

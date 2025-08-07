@@ -7,12 +7,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
-from fastapi_agentrouter.core.settings import settings
+from fastapi_agentrouter.core.settings import Settings, get_settings
 
 
-def test_slack_disabled(monkeypatch):
+def test_slack_disabled():
     """Test Slack endpoint when disabled."""
-    monkeypatch.setattr(settings, "disable_slack", True)
 
     def get_agent():
         class Agent:
@@ -21,8 +20,10 @@ def test_slack_disabled(monkeypatch):
 
         return Agent()
 
+    # Create app with disabled Slack
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=False)
     app.include_router(router)
     client = TestClient(app)
 
@@ -105,6 +106,7 @@ def test_slack_missing_library():
 
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
     app.include_router(router)
     client = TestClient(app)
 
