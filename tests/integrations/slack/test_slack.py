@@ -7,10 +7,7 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
 from fastapi_agentrouter.core.settings import Settings, get_settings
-from fastapi_agentrouter.integrations.slack.settings import (
-    SlackSettings,
-    get_slack_settings,
-)
+from fastapi_agentrouter.integrations.slack.settings import SlackSettings
 
 
 def test_slack_disabled():
@@ -48,15 +45,17 @@ def test_slack_events_missing_env_vars():
         return Agent()
     
     def get_test_settings():
-        return SlackSettings(
-            slack_bot_token=None,
-            slack_signing_secret=None,
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token=None,
+                signing_secret=None,
+            )
         )
     
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
-    app.dependency_overrides[get_slack_settings] = get_test_settings
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
@@ -64,6 +63,8 @@ def test_slack_events_missing_env_vars():
         "/agent/slack/events",
         json={"type": "url_verification", "challenge": "test_challenge"},
     )
+    if response.status_code != 500:
+        print(f"Response: {response.status_code} - {response.json()}")
     assert response.status_code == 500
     assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
 
@@ -78,17 +79,19 @@ def test_slack_events_endpoint():
         return Agent()
     
     def get_test_settings():
-        return SlackSettings(
-            slack_bot_token="xoxb-test-token",
-            slack_signing_secret="test-signing-secret",
-            slack_token_verification=False,
-            slack_request_verification=False,
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token="xoxb-test-token",
+                signing_secret="test-signing-secret",
+                token_verification=False,
+                request_verification=False,
+            )
         )
     
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
-    app.dependency_overrides[get_slack_settings] = get_test_settings
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 

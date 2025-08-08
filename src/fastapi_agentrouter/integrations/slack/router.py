@@ -1,16 +1,16 @@
 """Slack integration router."""
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ...core.dependencies import Agent
-from .dependencies import check_slack_enabled
-from .settings import SlackSettings, get_slack_settings
+from ...core.settings import get_settings
 
 if TYPE_CHECKING:
     from slack_bolt import App
+    from ...core.settings import Settings
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/slack", tags=["slack"])
 
 
-def get_slack_app(agent: Agent, settings: SlackSettings) -> "App":
+def get_slack_app(agent: Agent, settings: "Settings") -> "App":
     """Create and configure Slack App with agent and settings dependencies."""
     try:
         from slack_bolt import App
@@ -31,7 +31,7 @@ def get_slack_app(agent: Agent, settings: SlackSettings) -> "App":
             ),
         ) from e
 
-    if not settings.slack_bot_token or not settings.slack_signing_secret:
+    if not settings.slack or not settings.slack.bot_token or not settings.slack.signing_secret:
         raise HTTPException(
             status_code=500,
             detail=(
@@ -42,11 +42,11 @@ def get_slack_app(agent: Agent, settings: SlackSettings) -> "App":
 
     # Create Slack app instance
     slack_app = App(
-        token=settings.slack_bot_token,
-        signing_secret=settings.slack_signing_secret,
+        token=settings.slack.bot_token,
+        signing_secret=settings.slack.signing_secret,
         process_before_response=True,  # For serverless environments
-        token_verification_enabled=settings.slack_token_verification,
-        request_verification_enabled=settings.slack_request_verification,
+        token_verification_enabled=settings.slack.token_verification,
+        request_verification_enabled=settings.slack.request_verification,
     )
 
     # Define event handlers with lazy listeners
@@ -179,7 +179,7 @@ def get_slack_app(agent: Agent, settings: SlackSettings) -> "App":
     return slack_app
 
 
-def get_slack_request_handler(agent: Agent, settings: SlackSettings) -> Any:
+def get_slack_request_handler(agent: Agent, settings: "Settings") -> Any:
     """Get Slack request handler with agent and settings dependencies."""
     try:
         from slack_bolt.adapter.fastapi import SlackRequestHandler
@@ -196,12 +196,19 @@ def get_slack_request_handler(agent: Agent, settings: SlackSettings) -> Any:
     return SlackRequestHandler(slack_app)
 
 
-@router.post("/events", dependencies=[Depends(check_slack_enabled)])
+@router.post("/events")
 async def slack_events(
     request: Request,
     agent: Agent,
-    settings: SlackSettings = Depends(get_slack_settings),
+    settings: Annotated["Settings", Depends(get_settings)],
 ) -> Any:
     """Handle Slack events and interactions."""
+    # Check if Slack is enabled
+    if not settings.enable_slack:
+        raise HTTPException(
+            status_code=404,
+            detail="Slack integration is not enabled",
+        )
+    
     handler = get_slack_request_handler(agent, settings)
     return await handler.handle(request)
