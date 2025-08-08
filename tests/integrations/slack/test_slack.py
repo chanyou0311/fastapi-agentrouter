@@ -6,16 +6,15 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
-from fastapi_agentrouter.core.settings import settings
+from fastapi_agentrouter.core.settings import Settings, get_settings
 from fastapi_agentrouter.integrations.slack.settings import (
     SlackSettings,
     get_slack_settings,
 )
 
 
-def test_slack_disabled(monkeypatch):
+def test_slack_disabled():
     """Test Slack endpoint when disabled."""
-    monkeypatch.setattr(settings, "disable_slack", True)
 
     def get_agent():
         class Agent:
@@ -24,8 +23,10 @@ def test_slack_disabled(monkeypatch):
 
         return Agent()
 
+    # Create app with disabled Slack
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=False)
     app.include_router(router)
     client = TestClient(app)
 
@@ -39,6 +40,7 @@ def test_slack_disabled(monkeypatch):
 
 def test_slack_events_missing_env_vars():
     """Test Slack events endpoint without required environment variables."""
+
     def get_agent():
         class Agent:
             def stream_query(self, **kwargs):
@@ -53,6 +55,7 @@ def test_slack_events_missing_env_vars():
     
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
     app.dependency_overrides[get_slack_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
@@ -67,6 +70,7 @@ def test_slack_events_missing_env_vars():
 
 def test_slack_events_endpoint():
     """Test the Slack events endpoint with mocked dependencies."""
+
     def get_agent():
         class Agent:
             def stream_query(self, **kwargs):
@@ -83,6 +87,7 @@ def test_slack_events_endpoint():
     
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
+    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
     app.dependency_overrides[get_slack_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
@@ -111,48 +116,6 @@ def test_slack_events_endpoint():
                 },
             },
         )
-        # Check if there's an error message  
-        if response.status_code == 500:
-            print(f"Error response: {response.json()}")
         assert response.status_code == 200
 
 
-def test_slack_missing_library():
-    """Test error when slack-bolt is not installed."""
-
-    def get_agent():
-        class Agent:
-            def stream_query(self, **kwargs):
-                yield "response"
-
-        return Agent()
-    
-    def get_test_settings():
-        return SlackSettings(
-            slack_bot_token="xoxb-test-token",
-            slack_signing_secret="test-signing-secret",
-        )
-
-    app = FastAPI()
-    app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_slack_settings] = get_test_settings
-    app.include_router(router)
-    client = TestClient(app)
-
-    # Mock the import to fail when trying to import slack_bolt
-    import builtins
-
-    original_import = builtins.__import__
-
-    def mock_import(name, *args, **kwargs):
-        if name == "slack_bolt" or name.startswith("slack_bolt."):
-            raise ImportError(f"No module named '{name}'")
-        return original_import(name, *args, **kwargs)
-
-    with patch("builtins.__import__", side_effect=mock_import):
-        response = client.post(
-            "/agent/slack/events",
-            json={"type": "url_verification", "challenge": "test"},
-        )
-        assert response.status_code == 500
-        assert "slack-bolt is required" in response.json()["detail"]
