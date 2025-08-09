@@ -1,5 +1,4 @@
 """Integration modules for FastAPI AgentRouter."""
 
-from . import slack
-
+# Avoid circular imports by not automatically importing submodules
 __all__ = ["slack"]

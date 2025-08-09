@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
 from fastapi_agentrouter.core.settings import Settings, get_settings
+from fastapi_agentrouter.integrations.slack.settings import SlackSettings
 
 
 def test_router_includes_slack_endpoint():
@@ -19,24 +20,26 @@ def test_router_includes_slack_endpoint():
 
         return Agent()
 
+    def get_test_settings():
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token="xoxb-test-token",
+                signing_secret="test-signing-secret",
+                token_verification=False,
+                request_verification=False,
+            )
+        )
+
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
     with (
         patch("slack_bolt.adapter.fastapi.SlackRequestHandler") as mock_handler_class,
         patch("slack_bolt.App") as mock_app_class,
-        patch.dict(
-            "os.environ",
-            {
-                "SLACK_BOT_TOKEN": "xoxb-test-token",
-                "SLACK_SIGNING_SECRET": "test-signing-secret",
-                "SLACK_TOKEN_VERIFICATION": "false",
-                "SLACK_REQUEST_VERIFICATION": "false",
-            },
-        ),
     ):
         # Mock the handler and app
         mock_handler = Mock()
@@ -95,24 +98,26 @@ def test_complete_integration():
 
         return Agent()
 
+    def get_test_settings():
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token="xoxb-test-token",
+                signing_secret="test-signing-secret",
+                token_verification=False,
+                request_verification=False,
+            )
+        )
+
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
     with (
         patch("slack_bolt.adapter.fastapi.SlackRequestHandler") as mock_handler_class,
         patch("slack_bolt.App") as mock_app_class,
-        patch.dict(
-            "os.environ",
-            {
-                "SLACK_BOT_TOKEN": "xoxb-test-token",
-                "SLACK_SIGNING_SECRET": "test-signing-secret",
-                "SLACK_TOKEN_VERIFICATION": "false",
-                "SLACK_REQUEST_VERIFICATION": "false",
-            },
-        ),
     ):
         # Mock the handler and app
         mock_handler = Mock()
@@ -141,21 +146,28 @@ def test_slack_without_env_vars():
 
         return Agent()
 
+    def get_test_settings():
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token=None,
+                signing_secret=None,
+            )
+        )
+
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
-    # Ensure no Slack env vars are set
-    with patch.dict("os.environ", {}, clear=True):
-        response = client.post(
-            "/agent/slack/events",
-            json={"type": "url_verification", "challenge": "test"},
-        )
-        # Should fail due to missing environment variables
-        assert response.status_code == 500
-        assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
+    response = client.post(
+        "/agent/slack/events",
+        json={"type": "url_verification", "challenge": "test"},
+    )
+    # Should fail due to missing environment variables
+    assert response.status_code == 500
+    assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
 
 
 def test_multiple_settings_instances():
@@ -182,10 +194,16 @@ def test_multiple_settings_instances():
     app2.include_router(router)
     client2 = TestClient(app2)
 
-    # Test App 1 (Slack enabled)
-    with patch.dict("os.environ", {}, clear=True):
-        response1 = client1.post("/agent/slack/events", json={})
-        assert response1.status_code == 500  # Missing env vars
+    # Test App 1 (Slack enabled) - should fail due to missing Slack settings
+    app1.dependency_overrides[get_settings] = lambda: Settings(
+        enable_slack=True,
+        slack=SlackSettings(
+            bot_token=None,
+            signing_secret=None,
+        )
+    )
+    response1 = client1.post("/agent/slack/events", json={})
+    assert response1.status_code == 500  # Missing env vars
 
     # Test App 2 (Slack disabled)
     response2 = client2.post("/agent/slack/events", json={})

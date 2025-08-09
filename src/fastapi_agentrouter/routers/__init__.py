@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from ..integrations.slack import router as slack_router
+from ..integrations.slack.router import router as slack_router
 
 # Create main router with /agent prefix
 router = APIRouter(prefix="/agent")

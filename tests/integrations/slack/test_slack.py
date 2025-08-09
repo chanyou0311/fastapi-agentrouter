@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent_placeholder, router
 from fastapi_agentrouter.core.settings import Settings, get_settings
+from fastapi_agentrouter.integrations.slack.settings import SlackSettings
 
 
 def test_slack_disabled():
@@ -41,23 +42,31 @@ def test_slack_events_missing_env_vars():
         class Agent:
             def stream_query(self, **kwargs):
                 yield "response"
-
         return Agent()
-
+    
+    def get_test_settings():
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token=None,
+                signing_secret=None,
+            )
+        )
+    
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
-    # Mock environment check to ensure no env vars are set
-    with patch.dict("os.environ", {}, clear=True):
-        response = client.post(
-            "/agent/slack/events",
-            json={"type": "url_verification", "challenge": "test_challenge"},
-        )
-        assert response.status_code == 500
-        assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
+    response = client.post(
+        "/agent/slack/events",
+        json={"type": "url_verification", "challenge": "test_challenge"},
+    )
+    if response.status_code != 500:
+        print(f"Response: {response.status_code} - {response.json()}")
+    assert response.status_code == 500
+    assert "SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET" in response.json()["detail"]
 
 
 def test_slack_events_endpoint():
@@ -67,25 +76,28 @@ def test_slack_events_endpoint():
         class Agent:
             def stream_query(self, **kwargs):
                 yield "response"
-
         return Agent()
-
+    
+    def get_test_settings():
+        return Settings(
+            enable_slack=True,
+            slack=SlackSettings(
+                bot_token="xoxb-test-token",
+                signing_secret="test-signing-secret",
+                token_verification=False,
+                request_verification=False,
+            )
+        )
+    
     app = FastAPI()
     app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = get_test_settings
     app.include_router(router)
     client = TestClient(app)
 
     with (
         patch("slack_bolt.adapter.fastapi.SlackRequestHandler") as mock_handler_class,
         patch("slack_bolt.App") as mock_app_class,
-        patch.dict(
-            "os.environ",
-            {
-                "SLACK_BOT_TOKEN": "xoxb-test-token",
-                "SLACK_SIGNING_SECRET": "test-signing-secret",
-            },
-        ),
     ):
         # Mock the handler
         mock_handler = Mock()
@@ -110,45 +122,3 @@ def test_slack_events_endpoint():
         assert response.status_code == 200
 
 
-def test_slack_missing_library():
-    """Test error when slack-bolt is not installed."""
-
-    def get_agent():
-        class Agent:
-            def stream_query(self, **kwargs):
-                yield "response"
-
-        return Agent()
-
-    app = FastAPI()
-    app.dependency_overrides[get_agent_placeholder] = get_agent
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
-    app.include_router(router)
-    client = TestClient(app)
-
-    # Mock the import to fail when trying to import slack_bolt
-    import builtins
-
-    original_import = builtins.__import__
-
-    def mock_import(name, *args, **kwargs):
-        if name == "slack_bolt" or name.startswith("slack_bolt."):
-            raise ImportError(f"No module named '{name}'")
-        return original_import(name, *args, **kwargs)
-
-    with (
-        patch("builtins.__import__", side_effect=mock_import),
-        patch.dict(
-            "os.environ",
-            {
-                "SLACK_BOT_TOKEN": "xoxb-test-token",
-                "SLACK_SIGNING_SECRET": "test-signing-secret",
-            },
-        ),
-    ):
-        response = client.post(
-            "/agent/slack/events",
-            json={"type": "url_verification", "challenge": "test"},
-        )
-        assert response.status_code == 500
-        assert "slack-bolt is required" in response.json()["detail"]

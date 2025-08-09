@@ -7,6 +7,8 @@ from fastapi import Depends
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from ..integrations.slack.settings import SlackSettings
+
 
 class Settings(BaseSettings):
     """Application settings.
@@ -24,12 +26,19 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        env_nested_delimiter="__",  # For nested settings like SLACK__BOT_TOKEN
     )
 
     # Platform enable/disable settings
     enable_slack: bool = Field(
         default=False,
         description="Enable Slack integration endpoints",
+    )
+    
+    # Nested settings for integrations
+    slack: Optional[SlackSettings] = Field(
+        default=None,
+        description="Slack integration settings",
     )
 
 

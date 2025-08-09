@@ -1,5 +1,4 @@
 """Slack integration for FastAPI AgentRouter."""
 
-from .router import router
-
-__all__ = ["router"]
+# Avoid circular imports by not automatically importing router
+__all__ = ["router", "settings"]
