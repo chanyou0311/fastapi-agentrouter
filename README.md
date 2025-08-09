@@ -222,6 +222,7 @@ Response:
 
 See the [examples](examples/) directory for complete examples:
 - [basic_usage.py](examples/basic_usage.py) - Basic integration patterns
+- [slack_usage.py](examples/slack_usage.py) - Complete Slack bot implementation with multiple agent types
 - More examples coming soon!
 
 ## Development
