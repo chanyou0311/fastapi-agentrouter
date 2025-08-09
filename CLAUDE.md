@@ -63,26 +63,58 @@ The library uses a **Protocol-based dependency injection pattern** with FastAPI'
 
 1. **AgentProtocol** - Defines the interface any agent must implement
 2. **Dependency Injection** - Uses FastAPI's `dependency_overrides` for agent injection
-3. **Modular Routers** - Separate router modules per platform (Slack)
-4. **Environment-based Configuration** - Platforms can be disabled via environment variables
+3. **Modular Integration Architecture** - Separate integration modules per platform (Slack, Discord, etc.)
+4. **Pydantic Settings Configuration** - Environment-based configuration using pydantic-settings
+5. **Platform-specific Dependencies** - Optional dependencies for each integration (slack-bolt, PyNaCl, etc.)
 
 ### Directory Structure
 ```
 src/fastapi_agentrouter/
 ├── __init__.py                    # Main exports: router, AgentProtocol, get_agent_placeholder
-├── dependencies.py                # Core dependency module with AgentProtocol
-├── routers/
-│   ├── __init__.py               # Combines all routers with /agent prefix
-│   └── slack.py                  # Slack endpoints (mock implementation)
+├── core/
+│   ├── __init__.py               # Core module exports
+│   ├── dependencies.py           # Core dependency module with AgentProtocol
+│   └── settings.py               # Pydantic settings configuration
+├── integrations/
+│   ├── __init__.py               # Integration exports
+│   └── slack/
+│       ├── __init__.py           # Slack integration exports
+│       ├── dependencies.py       # Slack-specific dependencies
+│       └── router.py             # Slack endpoints using Slack Bolt
+└── routers/
+    └── __init__.py               # Combines all routers with /agent prefix
 ```
 
 ### Key Design Decisions
 - **No base classes** - Uses Protocol for maximum flexibility
 - **No setup functions** - Direct router inclusion via `app.include_router()`
-- **Mock implementations** - Endpoints return simple status responses
+- **Pydantic Settings** - Type-safe configuration management
+- **Platform-specific Integration** - Each platform has its own integration module
+- **Slack Bolt Integration** - Uses official Slack Bolt for Python for Slack features
 - **404 for disabled platforms** - Not 501, as per user feedback
 
 ## 📝 Development Commands
+
+### Installation Options
+```bash
+# Basic installation
+pip install fastapi-agentrouter
+
+# With Slack support (includes slack-bolt)
+pip install "fastapi-agentrouter[slack]"
+
+# With Discord support (includes PyNaCl)
+pip install "fastapi-agentrouter[discord]"
+
+# With Vertex AI support
+pip install "fastapi-agentrouter[vertexai]"
+
+# All integrations
+pip install "fastapi-agentrouter[all]"
+
+# Development installation with uv (recommended)
+uv sync --all-extras --dev
+```
 
 ### Essential Commands
 ```bash
@@ -149,10 +181,26 @@ class AgentProtocol(Protocol):
 ```
 
 ### 3. Platform Enable/Disable
-Platforms can be disabled via environment variables:
-- `DISABLE_SLACK=true`
+Platforms can be disabled via environment variables managed through pydantic-settings:
+- `DISABLE_SLACK=true` - Disable Slack integration
+- `DISABLE_DISCORD=true` - Disable Discord integration (when implemented)
+
+Configuration is managed through the `Settings` class in `core/settings.py` using pydantic-settings for type-safe environment variable handling.
 
 Disabled endpoints return 404 with appropriate error messages.
+
+### 4. Slack Integration with Slack Bolt
+The Slack integration now uses the official Slack Bolt for Python library:
+```python
+# Installation with Slack support
+pip install "fastapi-agentrouter[slack]"
+```
+
+This provides:
+- Event handling for Slack events
+- Interactive components support
+- Slash commands
+- OAuth flow handling (if needed)
 
 ## ⚠️ Common Pitfalls
 
@@ -174,7 +222,9 @@ Disabled endpoints return 404 with appropriate error messages.
 ### 2. Test Structure
 **Problem**: Tests not matching code structure
 **Solution**: Mirror the code structure:
-- `tests/routers/test_slack.py` for `src/fastapi_agentrouter/routers/slack.py`
+- `tests/core/test_dependencies.py` for `src/fastapi_agentrouter/core/dependencies.py`
+- `tests/core/test_settings.py` for `src/fastapi_agentrouter/core/settings.py`
+- `tests/integrations/slack/test_router.py` for `src/fastapi_agentrouter/integrations/slack/router.py`
 
 ### 3. Import Style
 **Problem**: Using old-style imports (`from typing import Dict`)
@@ -276,10 +326,14 @@ Disabled endpoints return 404 with appropriate error messages.
 ```
 tests/
 ├── conftest.py                    # Shared fixtures
-├── test_dependencies.py           # Test dependencies module
 ├── test_router.py                 # Integration tests
-└── routers/
-    └── test_slack.py             # Slack router tests
+├── core/
+│   ├── test_dependencies.py      # Test core dependencies
+│   └── test_settings.py          # Test pydantic settings
+└── integrations/
+    └── slack/
+        ├── test_dependencies.py  # Test Slack dependencies
+        └── test_router.py        # Slack router tests
 ```
 
 ### Writing Tests
@@ -433,12 +487,40 @@ To add a new language (e.g., Chinese):
 3. Translate all documentation files
 4. Test the new language locally
 
+## 🚀 Recent Architecture Updates (v0.3.0+)
+
+### Major Changes
+1. **Modular Integration Architecture**: Moved from simple routers to a full integration module system
+   - Each platform now has its own integration package
+   - Better separation of concerns and maintainability
+
+2. **Pydantic Settings Integration**: Migrated from simple environment variables to pydantic-settings
+   - Type-safe configuration
+   - Better validation and error messages
+   - Centralized settings management in `core/settings.py`
+
+3. **Slack Bolt Integration**: Replaced mock Slack implementation with Slack Bolt for Python
+   - Full support for Slack events and interactivity
+   - OAuth flow support
+   - Better event handling architecture
+
+4. **i18n Documentation**: Added multi-language support for documentation
+   - English and Japanese documentation
+   - MkDocs with static i18n plugin
+   - Consistent documentation structure across languages
+
+5. **Enhanced Testing**: Improved Python version compatibility testing
+   - CI tests against Python 3.9, 3.10, 3.11, and 3.12
+   - Better local testing commands with uv
+   - Comprehensive test coverage requirements
+
 ## 🐛 Known Issues
 
 - Codecov integration is disabled (to be enabled later)
 - Documentation deployment needs GitHub Pages setup
 - Example applications need expansion
 - i18n: Some documentation pages (examples, API reference) are placeholders waiting for content
+- Discord integration implementation pending (structure ready)
 
 ## 📮 Contact
 

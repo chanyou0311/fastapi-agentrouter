@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path | select(endswith(\\\".py\\\"))' | xargs -r sh -c 'uv run ruff check --fix \"$@\" && uv run ruff format \"$@\"' sh"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/test.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
