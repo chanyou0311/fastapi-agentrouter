@@ -89,6 +89,13 @@ app.dependency_overrides[get_agent_placeholder] = lambda: MyAgent()
 app.include_router(router)
 ```
 
+For a complete working example, see [examples/slack_usage.py](https://github.com/chanyou0311/fastapi-agentrouter/blob/main/examples/slack_usage.py) which includes:
+- Multiple agent implementations (simple, advanced, Vertex AI, custom business logic)
+- Complete Slack bot server setup
+- Environment-based agent selection
+- Health check endpoints
+- Detailed documentation and setup instructions
+
 ## Endpoint
 
 The Slack integration provides a single endpoint:

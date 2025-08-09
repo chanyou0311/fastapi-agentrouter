@@ -89,6 +89,13 @@ app.dependency_overrides[get_agent_placeholder] = lambda: MyAgent()
 app.include_router(router)
 ```
 
+完全な動作サンプルについては、[examples/slack_usage.py](https://github.com/chanyou0311/fastapi-agentrouter/blob/main/examples/slack_usage.py)を参照してください。以下の内容が含まれています：
+- 複数のエージェント実装（シンプル、高度、Vertex AI、カスタムビジネスロジック）
+- 完全なSlackボットサーバーのセットアップ
+- 環境変数によるエージェント選択
+- ヘルスチェックエンドポイント
+- 詳細なドキュメントとセットアップ手順
+
 ## エンドポイント
 
 Slack統合は単一のエンドポイントを提供：
