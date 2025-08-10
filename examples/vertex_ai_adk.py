@@ -1,10 +1,5 @@
-# Basic Example
+"""Example integration with Vertex AI Agent Development Kit (ADK)."""
 
-## Integration with Vertex AI ADK
-
-This example shows how to connect a Vertex AI Agent Development Kit (ADK) agent with FastAPI using AgentRouter.
-
-```python
 from fastapi import FastAPI
 from fastapi_agentrouter import get_agent_placeholder, router
 from vertexai import Agent
@@ -35,6 +30,13 @@ def get_adk_app() -> reasoning_engines.AdkApp:
 
 
 app = FastAPI()
+
+# Two-line integration
 app.dependency_overrides[get_agent_placeholder] = get_adk_app
 app.include_router(router)
-```
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

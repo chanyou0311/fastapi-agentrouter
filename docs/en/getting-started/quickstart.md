@@ -20,15 +20,16 @@ class SimpleAgent:
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_agent():
     return SimpleAgent()
 
 app = FastAPI()
 
-# Add the router with your agent - just one line!
-app.include_router(create_agent_router(get_agent))
+# Add the router with your agent - two lines!
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 ### Step 3: Test Your Agent
@@ -78,7 +79,7 @@ agent = Agent(
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_adk_app():
     return reasoning_engines.AdkApp(
@@ -88,8 +89,9 @@ def get_adk_app():
 
 app = FastAPI()
 
-# Integrate with FastAPI - just one line!
-app.include_router(create_agent_router(get_adk_app))
+# Integrate with FastAPI - two lines
+app.dependency_overrides[get_agent_placeholder] = get_adk_app
+app.include_router(router)
 ```
 
 ### Step 3: Configure Environment
@@ -106,14 +108,8 @@ export GOOGLE_CLOUD_PROJECT="your-project-id"
 You can selectively enable or disable platforms:
 
 ```python
-app.include_router(
-    create_agent_router(
-        get_agent,
-        enable_slack=True,
-        enable_discord=False,  # Returns 404 Not Found
-        enable_webhook=True
-    )
-)
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 ## Platform Integration
@@ -149,7 +145,7 @@ Here's a complete example with all features:
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 from vertexai import Agent
 from vertexai.preview import reasoning_engines
 import os
@@ -175,8 +171,9 @@ def get_agent():
 # Create FastAPI app
 app = FastAPI(title="My Agent API")
 
-# Add agent router - just one line!
-app.include_router(create_agent_router(get_agent))
+# Add agent router - two lines!
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn

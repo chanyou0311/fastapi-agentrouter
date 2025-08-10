@@ -86,41 +86,6 @@ def get_adk_app():
 app = FastAPI()
 app.dependency_overrides[get_agent_placeholder] = get_adk_app
 app.include_router(router)
-```
-
-### Custom Agent Implementation
-
-```python
-from fastapi import FastAPI
-from fastapi_agentrouter import router, get_agent_placeholder
-
-class CustomAgent:
-    def stream_query(self, *, message: str, user_id=None, session_id=None, **kwargs):
-        # Your custom logic here
-        yield f"Response to: {message}"
-
-def get_custom_agent():
-    return CustomAgent()
-
-app = FastAPI()
-app.dependency_overrides[get_agent_placeholder] = get_custom_agent
-app.include_router(router)
-```
-
-### Disabling Slack Integration
-
-```python
-import os
-from fastapi import FastAPI
-from fastapi_agentrouter import router, get_agent_placeholder
-
-# Disable Slack integration via environment variable
-os.environ["DISABLE_SLACK"] = "true"  # Slack endpoints will return 404
-
-app = FastAPI()
-app.dependency_overrides[get_agent_placeholder] = lambda: YourAgent()
-app.include_router(router)
-```
 
 ## Configuration
 
@@ -221,8 +186,7 @@ Response:
 ## Examples
 
 See the [examples](examples/) directory for complete examples:
-- [basic_usage.py](examples/basic_usage.py) - Basic integration patterns
-- More examples coming soon!
+ - [vertex_ai_adk.py](examples/vertex_ai_adk.py) - Integration with Vertex AI ADK
 
 ## Development
 

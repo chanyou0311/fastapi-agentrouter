@@ -8,7 +8,7 @@ FastAPI AgentRouterを使用すると、AIエージェントをFastAPIアプリ�
 
 ## 主な機能
 
-- 🚀 **シンプルな統合** - たった1行でFastAPIアプリにエージェントを追加
+- 🚀 **シンプルな統合** - たった2行でFastAPIアプリにエージェントを追加
 - 🤖 **Vertex AI ADKサポート** - GoogleのAgent Development Kitをネイティブサポート
 - 🔌 **マルチプラットフォーム** - Slack、Discord、Webhookエンドポイントを内蔵
 - 🎯 **プロトコルベース** - `stream_query`メソッドを実装した任意のエージェントで動作
@@ -19,7 +19,7 @@ FastAPI AgentRouterを使用すると、AIエージェントをFastAPIアプリ�
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_agent():
     # エージェントを返す（例：Vertex AI AdkApp）
@@ -27,8 +27,9 @@ def get_agent():
 
 app = FastAPI()
 
-# これだけです！たった1行
-app.include_router(create_agent_router(get_agent))
+# これだけです！たった2行
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 エージェントは以下のエンドポイントで利用可能になります：
