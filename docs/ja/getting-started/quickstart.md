@@ -20,15 +20,16 @@ class SimpleAgent:
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_agent():
     return SimpleAgent()
 
 app = FastAPI()
 
-# エージェントでルーターを追加 - たった1行！
-app.include_router(create_agent_router(get_agent))
+# エージェントでルーターを追加 - 2行だけ！
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 ### ステップ3: エージェントのテスト
@@ -78,7 +79,7 @@ agent = Agent(
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_adk_app():
     return reasoning_engines.AdkApp(
@@ -88,8 +89,9 @@ def get_adk_app():
 
 app = FastAPI()
 
-# FastAPIと統合 - たった1行！
-app.include_router(create_agent_router(get_adk_app))
+# FastAPIと統合 - 2行だけ！
+app.dependency_overrides[get_agent_placeholder] = get_adk_app
+app.include_router(router)
 ```
 
 ### ステップ3: 環境の設定
@@ -106,14 +108,8 @@ export GOOGLE_CLOUD_PROJECT="your-project-id"
 プラットフォームを選択的に有効化/無効化できます：
 
 ```python
-app.include_router(
-    create_agent_router(
-        get_agent,
-        enable_slack=True,
-        enable_discord=False,  # 404 Not Foundを返す
-        enable_webhook=True
-    )
-)
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 ## プラットフォーム統合
@@ -149,7 +145,7 @@ export DISCORD_PUBLIC_KEY="your-discord-public-key"
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 from vertexai import Agent
 from vertexai.preview import reasoning_engines
 import os
@@ -175,8 +171,9 @@ def get_agent():
 # FastAPIアプリを作成
 app = FastAPI(title="My Agent API")
 
-# エージェントルーターを追加 - たった1行！
-app.include_router(create_agent_router(get_agent))
+# エージェントルーターを追加 - 2行だけ！
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn

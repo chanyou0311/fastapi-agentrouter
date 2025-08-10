@@ -8,7 +8,7 @@ FastAPI AgentRouter makes it incredibly easy to integrate AI agents into your Fa
 
 ## Key Features
 
-- 🚀 **Simple Integration** - Just 1 line to add agent to your FastAPI app
+- 🚀 **Simple Integration** - Just 2 lines to add agent to your FastAPI app
 - 🤖 **Vertex AI ADK Support** - Native support for Google's Agent Development Kit
 - 🔌 **Multi-Platform** - Built-in Slack, Discord, and webhook endpoints
 - 🎯 **Protocol-Based** - Works with any agent implementing `stream_query` method
@@ -19,7 +19,7 @@ FastAPI AgentRouter makes it incredibly easy to integrate AI agents into your Fa
 
 ```python
 from fastapi import FastAPI
-from fastapi_agentrouter import create_agent_router
+from fastapi_agentrouter import get_agent_placeholder, router
 
 def get_agent():
     # Return your agent (e.g., Vertex AI AdkApp)
@@ -27,8 +27,9 @@ def get_agent():
 
 app = FastAPI()
 
-# That's it! Just one line
-app.include_router(create_agent_router(get_agent))
+# That's it! Just two lines
+app.dependency_overrides[get_agent_placeholder] = get_agent
+app.include_router(router)
 ```
 
 Your agent is now available at:
