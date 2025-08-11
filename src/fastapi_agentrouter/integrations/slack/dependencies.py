@@ -68,9 +68,6 @@ def get_slack_app(settings: SettingsDep, agent: AgentDep) -> "SlackApp":
     slack_bot_token = settings.slack.bot_token
     slack_signing_secret = settings.slack.signing_secret
 
-    print(slack_bot_token)
-    print(slack_signing_secret)
-
     slack_app = SlackApp(
         token=slack_bot_token,
         signing_secret=slack_signing_secret,

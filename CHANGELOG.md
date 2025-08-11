@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.4.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.3.0...v0.4.0) (2025-08-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* Changed disable_slack to enable_slack (inverted logic)
+
+### Features
+
+* add auto-approve and auto-merge workflow for chanyou0311 PRs ([#28](https://github.com/chanyou0311/fastapi-agentrouter/issues/28)) ([5d9a566](https://github.com/chanyou0311/fastapi-agentrouter/commit/5d9a5667d793fbdf5a70292537ed67120eb00b29))
+
+
+### Bug Fixes
+
+* Reimplement slack integration ([#37](https://github.com/chanyou0311/fastapi-agentrouter/issues/37)) ([5a82b6f](https://github.com/chanyou0311/fastapi-agentrouter/commit/5a82b6f2f96cb3b1190fbe6b4abe05c5696a25cd))
+
+
+### Documentation
+
+* comprehensive CLAUDE.md architecture update ([#33](https://github.com/chanyou0311/fastapi-agentrouter/issues/33)) ([c273f1d](https://github.com/chanyou0311/fastapi-agentrouter/commit/c273f1da10df1d8e886cdcf6744df66169b697dd))
+
+
+### Miscellaneous Chores
+
+* override release version to avoid breaking change bump ([#30](https://github.com/chanyou0311/fastapi-agentrouter/issues/30)) ([793531a](https://github.com/chanyou0311/fastapi-agentrouter/commit/793531a37f08baa02a0df9274851bf996e616a76))
+
+
+### Code Refactoring
+
+* improve settings configuration with dependency injection ([#25](https://github.com/chanyou0311/fastapi-agentrouter/issues/25)) ([ae18e7b](https://github.com/chanyou0311/fastapi-agentrouter/commit/ae18e7bf5e040e3a90247af70c841db91ab5a1f1))
+
 ## [0.3.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.2.0...v0.3.0) (2025-08-07)
 
 
