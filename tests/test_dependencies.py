@@ -3,7 +3,7 @@
 import pytest
 from fastapi import HTTPException
 
-from fastapi_agentrouter.core.settings import Settings
+from fastapi_agentrouter.core.settings import Settings, SlackSettings
 from fastapi_agentrouter.integrations.slack.dependencies import check_slack_enabled
 
 
@@ -29,5 +29,7 @@ def test_check_slack_enabled():
     assert "Slack integration is not enabled" in exc_info.value.detail
 
     # Should not raise when enabled
-    settings = Settings(enable_slack=True)
+    settings = Settings(
+        slack=SlackSettings(bot_token="test-token", signing_secret="test-secret")
+    )
     check_slack_enabled(settings)  # Should not raise

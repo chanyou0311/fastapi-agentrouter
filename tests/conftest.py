@@ -6,8 +6,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_agentrouter import get_agent_placeholder, router
-from fastapi_agentrouter.core.settings import Settings, get_settings
+from fastapi_agentrouter import get_agent, router
+from fastapi_agentrouter.core.settings import Settings, SlackSettings, get_settings
 
 
 class MockAgent:
@@ -44,9 +44,11 @@ def test_app(get_agent_factory) -> FastAPI:
     """Create a test FastAPI application with Slack enabled."""
     app = FastAPI()
     # Override the placeholder dependency
-    app.dependency_overrides[get_agent_placeholder] = get_agent_factory
+    app.dependency_overrides[get_agent] = get_agent_factory
     # Enable Slack for testing by default
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=True)
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        slack=SlackSettings(bot_token="test-token", signing_secret="test-secret")
+    )
     app.include_router(router)
     return app
 
@@ -56,9 +58,9 @@ def test_app_slack_disabled(get_agent_factory) -> FastAPI:
     """Create a test FastAPI application with Slack disabled."""
     app = FastAPI()
     # Override the placeholder dependency
-    app.dependency_overrides[get_agent_placeholder] = get_agent_factory
+    app.dependency_overrides[get_agent] = get_agent_factory
     # Disable Slack
-    app.dependency_overrides[get_settings] = lambda: Settings(enable_slack=False)
+    app.dependency_overrides[get_settings] = lambda: Settings(slack=None)
     app.include_router(router)
     return app
 
