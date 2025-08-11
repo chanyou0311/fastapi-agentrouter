@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 - FastAPI 0.100.0 or higher
 
 ## Basic Installation
