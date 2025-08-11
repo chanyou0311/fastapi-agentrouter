@@ -22,7 +22,7 @@ class AgentProtocol(Protocol):
 
 # Placeholder for agent dependency
 # This will be overridden by user's actual agent
-def get_agent_placeholder() -> AgentProtocol:
+def get_agent() -> AgentProtocol:
     """Placeholder for agent dependency.
 
     Users should provide their own agent via dependencies:
@@ -35,4 +35,4 @@ def get_agent_placeholder() -> AgentProtocol:
 
 
 # This will be the dependency injection point
-Agent = Annotated[AgentProtocol, Depends(get_agent_placeholder)]
+AgentDep = Annotated[AgentProtocol, Depends(get_agent)]
