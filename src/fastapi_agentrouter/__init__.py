@@ -2,16 +2,15 @@
 
 __version__ = "0.3.0"
 
-from .core.dependencies import AgentProtocol, get_agent_placeholder
-from .core.settings import Settings, SettingsProvider, get_settings
+from .core.dependencies import AgentProtocol, get_agent
+from .core.settings import Settings, get_settings
 from .routers import router
 
 __all__ = [
     "AgentProtocol",
     "Settings",
-    "SettingsProvider",
     "__version__",
-    "get_agent_placeholder",
+    "get_agent",
     "get_settings",
     "router",
 ]
