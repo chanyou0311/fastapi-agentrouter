@@ -149,7 +149,7 @@ mkdocs serve --config-file mkdocs.yml  # Then navigate to /ja/ for Japanese
 
 ### CI/CD Pipeline
 The project uses GitHub Actions for CI with these checks:
-- Python 3.9, 3.10, 3.11, 3.12 compatibility
+- Python 3.10, 3.11, 3.12 compatibility
 - Linting with Ruff
 - Type checking with MyPy
 - Test coverage reporting
@@ -228,7 +228,7 @@ This provides:
 
 ### 3. Import Style
 **Problem**: Using old-style imports (`from typing import Dict`)
-**Solution**: Use built-in types (`dict`, `list`, `tuple`) for Python 3.9+
+**Solution**: Use built-in types (`dict`, `list`, `tuple`) for Python 3.10+
 
 ### 4. Pre-commit Failures
 **Problem**: CI fails on formatting/linting
@@ -371,7 +371,7 @@ The project uses `release-please` for automated releases:
 ## 🧪 Python Version Compatibility Testing
 
 ### Context
-Local development typically uses Python 3.11, but CI tests against Python 3.9, 3.10, 3.11, and 3.12. Version differences can cause CI failures that pass locally.
+Local development typically uses Python 3.11, but CI tests against Python 3.10, 3.11, and 3.12. Version differences can cause CI failures that pass locally.
 
 ### CI Failure Workflow for Claude Code
 
@@ -398,21 +398,21 @@ gh run view <run-id> --job <job-id> --log
 
 #### Step 3: Reproduce Locally
 ```bash
-# If Python 3.9 failed in CI, test locally with that version
-uv run --python 3.9 pytest -xvs  # -x stops at first failure, -v verbose, -s shows print statements
+# If Python 3.10 failed in CI, test locally with that version
+uv run --python 3.10 pytest -xvs  # -x stops at first failure, -v verbose, -s shows print statements
 
 # For specific test that failed
-uv run --python 3.9 pytest tests/test_specific.py::TestClass::test_method -xvs
+uv run --python 3.10 pytest tests/test_specific.py::TestClass::test_method -xvs
 ```
 
 #### Step 4: Fix and Verify
 After fixing the issue:
 ```bash
 # Test with the previously failed version
-uv run --python 3.9 pytest
+uv run --python 3.10 pytest
 
 # Optionally test all versions before pushing
-for v in 3.9 3.10 3.11 3.12; do
+for v in 3.10 3.11 3.12; do
     echo "Testing Python $v..."
     uv run --python $v pytest || break
 done
@@ -422,7 +422,7 @@ done
 ```bash
 # Push the fix
 git add -A
-git commit -m "fix: Python 3.9 compatibility issue"
+git commit -m "fix: Python 3.10 compatibility issue"
 git push
 
 # Watch CI status
@@ -433,7 +433,6 @@ gh pr checks --watch
 
 ```bash
 # Test with specific Python version
-uv run --python 3.9 pytest    # Run all tests with Python 3.9
 uv run --python 3.10 pytest   # Run all tests with Python 3.10
 uv run --python 3.11 pytest   # Run all tests with Python 3.11
 uv run --python 3.12 pytest   # Run all tests with Python 3.12
@@ -442,14 +441,14 @@ uv run --python 3.12 pytest   # Run all tests with Python 3.12
 uv python list | grep -v "download available"
 
 # Install missing Python version if needed
-uv python install 3.9  # Install Python 3.9 if not available
+uv python install 3.10  # Install Python 3.10 if not available
 ```
 
 ### Best Practices
 
 1. **Default testing**: Use `pytest` with your default Python (usually 3.11)
 2. **After CI failure**: ALWAYS reproduce with the exact failed Python version
-3. **Before final PR push**: Consider testing with `uv run --python 3.9 pytest` (oldest supported)
+3. **Before final PR push**: Consider testing with `uv run --python 3.10 pytest` (oldest supported)
 4. **Monitor CI**: Use `gh pr checks --watch` to see real-time CI status
 
 ## 🌐 i18n Maintenance Guide
@@ -510,7 +509,7 @@ To add a new language (e.g., Chinese):
    - Consistent documentation structure across languages
 
 5. **Enhanced Testing**: Improved Python version compatibility testing
-   - CI tests against Python 3.9, 3.10, 3.11, and 3.12
+   - CI tests against Python 3.10, 3.11, and 3.12
    - Better local testing commands with uv
    - Comprehensive test coverage requirements
 
