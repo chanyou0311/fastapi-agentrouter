@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         nested_model_default_partial_update=False,
         env_nested_delimiter="__",
+        extra="ignore",
     )
 
     slack: Optional[SlackSettings] = None
