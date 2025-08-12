@@ -4,13 +4,46 @@ on:
   pull_request:
     branches:
       - main
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Security check for pull_request_target
+  # Only run on pull_request_target for release-please PRs from github-actions bot
+  security-check:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ github.actor }}" == "github-actions[bot]" && "${{ github.event.pull_request.head.ref }}" =~ ^release-please--branches--main ]] ||
+             [[ "${{ github.actor }}" == "release-please[bot]" ]]; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "✅ Running CI for release-please PR"
+          else
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping CI for non-release-please pull_request_target"
+          fi
+
   test:
+    # Run on normal pull_request events OR approved pull_request_target events
+    needs: [security-check]
+    if: |
+      !cancelled() && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'pull_request_target' && needs.security-check.outputs.should-run == 'true')
+      )
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,6 +51,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          # For pull_request_target, checkout the PR's head ref
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v6
@@ -37,9 +73,18 @@ jobs:
         run: uv run pytest --cov=src --cov-report=xml
 
   docs:
+    needs: [security-check]
+    if: |
+      !cancelled() && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'pull_request_target' && needs.security-check.outputs.should-run == 'true')
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          # For pull_request_target, checkout the PR's head ref
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v6
