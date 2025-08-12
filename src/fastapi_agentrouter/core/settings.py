@@ -8,6 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class SlackSettings(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore")
+
     bot_token: str
     signing_secret: str
 
@@ -22,6 +24,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         nested_model_default_partial_update=False,
         env_nested_delimiter="__",
+        extra="ignore",
     )
 
     slack: SlackSettings | None = None
