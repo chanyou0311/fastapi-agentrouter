@@ -80,7 +80,7 @@ packages = ["src/fastapi_agentrouter"]
 # Ruff configuration
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
