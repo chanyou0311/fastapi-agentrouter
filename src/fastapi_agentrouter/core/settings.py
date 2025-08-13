@@ -1,13 +1,15 @@
 """Settings management for FastAPI AgentRouter using pydantic-settings."""
 
 from functools import lru_cache
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class SlackSettings(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore")
+
     bot_token: str
     signing_secret: str
 
@@ -22,9 +24,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         nested_model_default_partial_update=False,
         env_nested_delimiter="__",
+        extra="ignore",
     )
 
-    slack: Optional[SlackSettings] = None
+    slack: SlackSettings | None = None
 
     def is_slack_enabled(self) -> bool:
         """Check if Slack integration is enabled.
