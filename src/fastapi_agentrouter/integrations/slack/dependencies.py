@@ -1,11 +1,12 @@
 """Slack-specific dependencies."""
 
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, HTTPException
 
-from ...core.dependencies import AgentDep, AgentProtocol
+from ...core.dependencies import AgentDep
 from ...core.settings import SettingsDep
 
 if TYPE_CHECKING:
@@ -24,29 +25,48 @@ def check_slack_enabled(settings: SettingsDep) -> None:
         )
 
 
-def app_mention(event: dict, say: Any, body: dict, agent: AgentProtocol) -> None:
-    """Handle app mention events with agent."""
-    user: str = event.get("user", "u_123")
-    text: str = event.get("text", "")
-    logger.info(f"App mentioned by user {user}: {text}")
-    say(text)
+def get_ack() -> Callable[[dict, Any], None]:
+    """Get an acknowledgment function for Slack events."""
 
-    full_response_text = ""
-    for event_data in agent.stream_query(
-        user_id="u_123",
-        message=text,
-    ):
-        if (
-            "content" in event_data
-            and "parts" in event_data["content"]
-            and "text" in event_data["content"]["parts"][0]
+    def ack(body: dict, ack: Any) -> None:
+        """Acknowledge the event."""
+        ack()
+
+    return ack
+
+
+def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
+    """Get app mention event handler."""
+
+    def app_mention(event: dict, say: Any, body: dict) -> None:
+        """Handle app mention events with agent."""
+        user: str = event.get("user", "u_123")
+        text: str = event.get("text", "")
+        logger.info(f"App mentioned by user {user}: {text}")
+        say(text)
+
+        full_response_text = ""
+        for event_data in agent.stream_query(
+            user_id="u_123",
+            message=text,
         ):
-            full_response_text += event_data["content"]["parts"][0]["text"]
+            if (
+                "content" in event_data
+                and "parts" in event_data["content"]
+                and "text" in event_data["content"]["parts"][0]
+            ):
+                full_response_text += event_data["content"]["parts"][0]["text"]
 
-    say(full_response_text)
+        say(full_response_text)
+
+    return app_mention
 
 
-def get_slack_app(settings: SettingsDep, agent: AgentDep) -> "SlackApp":
+def get_slack_app(
+    settings: SettingsDep,
+    ack: Annotated[Callable[[dict, Any], None], Depends(get_ack)],
+    app_mention: Annotated[Callable[[dict, Any, dict], None], Depends(get_app_mention)],
+) -> "SlackApp":
     """Create and configure Slack App with agent dependency."""
     try:
         from slack_bolt import App as SlackApp
@@ -74,16 +94,8 @@ def get_slack_app(settings: SettingsDep, agent: AgentDep) -> "SlackApp":
         process_before_response=True,
     )
 
-    # Define event handlers with lazy listeners
-    def ack(body: dict, ack: Any) -> None:
-        """Acknowledge the event."""
-        ack()
-
-    def lazy_app_mention(event: dict, say: Any, body: dict) -> None:
-        app_mention(event, say, body, agent)
-
     # Register event handlers with lazy listeners
-    slack_app.event("app_mention")(ack=ack, lazy=[lazy_app_mention])
+    slack_app.event("app_mention")(ack=ack, lazy=[app_mention])
 
     return slack_app
 
