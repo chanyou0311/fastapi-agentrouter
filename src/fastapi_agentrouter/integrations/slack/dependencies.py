@@ -59,13 +59,35 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
                 session_id=session_id,
                 message=text,
             ):
-                if (
-                    "content" in event_data
-                    and "parts" in event_data["content"]
-                    and "text" in event_data["content"]["parts"][0]
-                ):
-                    full_response_text += event_data["content"]["parts"][0]["text"]
-                logger.debug(f"Received event_data: {event_data}")
+                logger.debug(
+                    f"Received event_data: {event_data}, type: {type(event_data)}"
+                )
+
+                # Handle different response formats
+                if isinstance(event_data, dict):
+                    # Dictionary response - try multiple possible formats
+                    if (
+                        "content" in event_data
+                        and "parts" in event_data["content"]
+                        and isinstance(event_data["content"]["parts"], list)
+                        and len(event_data["content"]["parts"]) > 0
+                        and "text" in event_data["content"]["parts"][0]
+                    ):
+                        full_response_text += event_data["content"]["parts"][0]["text"]
+                    elif "text" in event_data:
+                        full_response_text += event_data["text"]
+                    elif "content" in event_data and isinstance(
+                        event_data["content"], str
+                    ):
+                        full_response_text += event_data["content"]
+                elif isinstance(event_data, str):  # type: ignore[unreachable]
+                    # Direct string response
+                    full_response_text += event_data
+                else:
+                    # Try to convert to string for other types
+                    text_part = str(event_data)
+                    if text_part and text_part != "None":
+                        full_response_text += text_part
         except Exception as e:
             logger.error(f"Error processing agent response: {e}")
             say(text=f"Sorry, I encountered an error: {e!s}", thread_ts=thread_ts)
@@ -146,21 +168,51 @@ def get_message(agent: AgentDep) -> Callable[[dict, Any, dict, Any], None]:
         session_id = thread_key
 
         full_response_text = ""
-        for event_data in agent.stream_query(
-            user_id=user_id,
-            session_id=session_id,
-            message=text,
-        ):
-            if (
-                "content" in event_data
-                and "parts" in event_data["content"]
-                and "text" in event_data["content"]["parts"][0]
+        try:
+            for event_data in agent.stream_query(
+                user_id=user_id,
+                session_id=session_id,
+                message=text,
             ):
-                full_response_text += event_data["content"]["parts"][0]["text"]
+                logger.debug(
+                    f"Message handler received: {event_data}, type: {type(event_data)}"
+                )
+
+                # Handle different response formats
+                if isinstance(event_data, dict):
+                    if (
+                        "content" in event_data
+                        and "parts" in event_data["content"]
+                        and isinstance(event_data["content"]["parts"], list)
+                        and len(event_data["content"]["parts"]) > 0
+                        and "text" in event_data["content"]["parts"][0]
+                    ):
+                        full_response_text += event_data["content"]["parts"][0]["text"]
+                    elif "text" in event_data:
+                        full_response_text += event_data["text"]
+                    elif "content" in event_data and isinstance(
+                        event_data["content"], str
+                    ):
+                        full_response_text += event_data["content"]
+                elif isinstance(event_data, str):  # type: ignore[unreachable]
+                    # Direct string response
+                    full_response_text += event_data
+                else:
+                    # Try to convert to string for other types
+                    text_part = str(event_data)
+                    if text_part and text_part != "None":
+                        full_response_text += text_part
+        except Exception as e:
+            logger.error(f"Error in message handler: {e}")
+            say(text=f"Sorry, I encountered an error: {e!s}", thread_ts=thread_ts)
+            return
 
         # Reply in thread
         if full_response_text:
+            logger.info(f"Sending message response: {full_response_text[:100]}...")
             say(text=full_response_text, thread_ts=thread_ts)
+        else:
+            logger.warning("Agent returned empty response in message handler")
 
     return message
 
