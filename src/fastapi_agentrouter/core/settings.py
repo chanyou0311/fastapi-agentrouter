@@ -14,6 +14,15 @@ class SlackSettings(BaseSettings):
     signing_secret: str
 
 
+class VertexAISettings(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore")
+
+    project_id: str
+    location: str
+    staging_bucket: str
+    agent_name: str
+
+
 class Settings(BaseSettings):
     """Application settings.
 
@@ -28,6 +37,7 @@ class Settings(BaseSettings):
     )
 
     slack: SlackSettings | None = None
+    vertexai: VertexAISettings | None = None
 
     def is_slack_enabled(self) -> bool:
         """Check if Slack integration is enabled.
@@ -36,6 +46,14 @@ class Settings(BaseSettings):
             bool: True if Slack settings are configured, False otherwise
         """
         return self.slack is not None
+
+    def is_vertexai_enabled(self) -> bool:
+        """Check if Vertex AI integration is enabled.
+
+        Returns:
+            bool: True if Vertex AI settings are configured, False otherwise
+        """
+        return self.vertexai is not None
 
 
 # Cache the environment-based settings instance
