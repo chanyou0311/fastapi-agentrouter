@@ -1,5 +1,6 @@
 """Core dependencies for FastAPI AgentRouter."""
 
+from collections.abc import Generator
 from typing import Annotated, Any, Protocol
 
 from fastapi import Depends, HTTPException
@@ -15,7 +16,7 @@ class AgentProtocol(Protocol):
         user_id: str | None = None,
         session_id: str | None = None,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Generator[dict[str, Any], Any, None]:
         """Stream responses from the agent."""
         ...
 
