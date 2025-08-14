@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.1](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.0...v0.4.1) (2025-08-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Minimum Python version is now 3.10
+
+### Bug Fixes
+
+* add extra='ignore' to Slack and Settings model configs ([#43](https://github.com/chanyou0311/fastapi-agentrouter/issues/43)) ([25d08cb](https://github.com/chanyou0311/fastapi-agentrouter/commit/25d08cbe67980425961e568870b3f9e0c7011711))
+* add GitHub App token retrieval to release workflow ([#52](https://github.com/chanyou0311/fastapi-agentrouter/issues/52)) ([4f8d073](https://github.com/chanyou0311/fastapi-agentrouter/commit/4f8d07377c62ca4dfeb935ecf7f4975ddda9b10c))
+* **deps:** update actions/checkout action to v5 ([#39](https://github.com/chanyou0311/fastapi-agentrouter/issues/39)) ([1b82f33](https://github.com/chanyou0311/fastapi-agentrouter/commit/1b82f33e1240c2e9102be0c746888d1441c5609a))
+* **deps:** update amannn/action-semantic-pull-request action to v6 ([#50](https://github.com/chanyou0311/fastapi-agentrouter/issues/50)) ([7c5bbbf](https://github.com/chanyou0311/fastapi-agentrouter/commit/7c5bbbf2e8427057094a20220c5c9b7faf793c0f))
+* **deps:** update amannn/action-semantic-pull-request digest to e32d7e6 ([#49](https://github.com/chanyou0311/fastapi-agentrouter/issues/49)) ([cd0cbcb](https://github.com/chanyou0311/fastapi-agentrouter/commit/cd0cbcb5455a0850a7c9c52879d45f79570c9d70))
+* **deps:** update astral-sh/setup-uv digest to d9e0f98 ([#46](https://github.com/chanyou0311/fastapi-agentrouter/issues/46)) ([56d2a3d](https://github.com/chanyou0311/fastapi-agentrouter/commit/56d2a3d9be410829692bea99b395ebed573d24e3))
+
+
+### Miscellaneous Chores
+
+* drop Python 3.9 support ([#40](https://github.com/chanyou0311/fastapi-agentrouter/issues/40)) ([db04dcf](https://github.com/chanyou0311/fastapi-agentrouter/commit/db04dcfaa7c9f1091613e6f61d51a3d6dfdf7ab5))
+* override release version to avoid breaking change bump ([#44](https://github.com/chanyou0311/fastapi-agentrouter/issues/44)) ([4726fa2](https://github.com/chanyou0311/fastapi-agentrouter/commit/4726fa26038f51cc240530d728ae982ab880bd17))
+
 ## [0.4.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.3.0...v0.4.0) (2025-08-11)
 
 
