@@ -308,6 +308,71 @@ This provides:
    git commit -m "feat: descriptive message"
    ```
 
+## 🔀 PR Feedback and Additional Commits
+
+### ⚠️ CRITICAL: Handling PR Feedback
+
+**ALWAYS create additional commits when addressing PR feedback!**
+
+When you receive feedback on a Pull Request and need to make changes:
+
+1. **NEVER use force push** (`git push --force` or `git push -f`)
+   - Force push is **absolutely prohibited**
+   - It destroys the review history
+   - Makes it difficult for reviewers to see what changed
+
+2. **Always create additional commits**
+   ```bash
+   # After making changes based on feedback
+   git add .
+   git commit -m "fix: address PR feedback - [describe the change]"
+   git push
+   ```
+
+3. **Good commit messages for PR feedback**
+   ```bash
+   # Examples of good PR feedback commit messages
+   git commit -m "fix: address review feedback - update type hints"
+   git commit -m "docs: clarify API documentation per review"
+   git commit -m "test: add edge case tests requested in review"
+   git commit -m "refactor: simplify logic based on reviewer suggestion"
+   ```
+
+4. **Why additional commits are important**
+   - Preserves the review history
+   - Allows reviewers to see exactly what changed after their feedback
+   - Makes it easy to track the evolution of the PR
+   - Enables GitHub's "View changes since last review" feature
+
+5. **Typical PR feedback workflow**
+   ```bash
+   # 1. Fetch latest changes
+   git pull origin your-branch
+
+   # 2. Make requested changes
+   # ... edit files based on feedback ...
+
+   # 3. Run validation
+   uv run pre-commit run --all-files
+   uv run pytest
+
+   # 4. Create a new commit (DO NOT amend!)
+   git add .
+   git commit -m "fix: address PR feedback - [specific change]"
+
+   # 5. Push the new commit
+   git push
+
+   # 6. Comment on PR that changes have been made
+   ```
+
+### Best Practices for PR Updates
+- Each round of feedback should result in one or more new commits
+- Keep commits focused on addressing specific feedback points
+- Reference the feedback in commit messages when appropriate
+- Never squash or rebase during the review process
+- The PR will be squash-merged when approved, cleaning up the history
+
 ## 📚 References
 
 ### External Documentation
