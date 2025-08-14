@@ -43,7 +43,6 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         user: str = event.get("user", "u_123")
         text: str = event.get("text", "")
         logger.info(f"App mentioned by user {user}: {text}")
-        say(text)
 
         full_response_text = ""
         for event_data in agent.stream_query(
