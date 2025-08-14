@@ -1,45 +1,49 @@
 """Basic usage example with FastAPI AgentRouter."""
 
-from typing import TYPE_CHECKING, Any
+import os
+from typing import TYPE_CHECKING
 
+import uvicorn
+import vertexai
 from fastapi import FastAPI
+from vertexai import agent_engines
 
 import fastapi_agentrouter
 
 if TYPE_CHECKING:
-    pass
+    from vertexai.agent_engines import AgentEngine
 
 
-# Example 1: Simplest usage - just include the router
+PROJECT_ID = os.environ["PROJECT_ID"]
+LOCATION = os.environ["LOCATION"]
+STAGING_BUCKET = os.environ["STAGING_BUCKET"]
+AGENT_NAME = os.environ["AGENT_NAME"]
+
 app = FastAPI()
 
 
-def get_agent() -> Any:
-    """Get your agent instance.
+def get_agent() -> "AgentEngine":
+    """Get the Vertex AI AgentEngine instance for the specified agent."""
+    vertexai.init(
+        project=PROJECT_ID,
+        location=LOCATION,
+        staging_bucket=STAGING_BUCKET,
+    )
 
-    This could return:
-    - Vertex AI AdkApp instance
-    - Custom agent implementing AgentProtocol
-    - Any object with stream_query method
-    """
+    apps = list(agent_engines.list(filter=f"display_name={AGENT_NAME}"))
 
-    # Example with mock agent for testing
-    class MockAgent:
-        def stream_query(self, *, message: str, **kwargs):
-            yield f"Echo: {message}"
+    if len(apps) == 0:
+        raise ValueError(f"Agent '{AGENT_NAME}' not found.")
+    elif len(apps) > 1:
+        raise ValueError(f"Multiple agents found with name '{AGENT_NAME}'.")
 
-    return MockAgent()
+    app = apps[0]
+    return app
 
 
-# Override the dependency to provide your agent
 app.dependency_overrides[fastapi_agentrouter.get_agent] = get_agent
-
-# Single line integration!
 app.include_router(fastapi_agentrouter.router)
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    # Run with: python examples/basic_usage.py
     uvicorn.run(app, host="0.0.0.0", port=8000)
