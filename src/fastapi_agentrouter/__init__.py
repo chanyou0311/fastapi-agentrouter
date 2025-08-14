@@ -1,6 +1,6 @@
 """FastAPI AgentRouter - AI Agent interface library for FastAPI."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 from .core.dependencies import AgentProtocol, get_agent
 from .core.settings import Settings, get_settings
