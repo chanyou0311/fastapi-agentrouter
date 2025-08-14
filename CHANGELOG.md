@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.2](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.1...v0.4.2) (2025-08-14)
+
+
+### Bug Fixes
+
+* **deps:** pin actions/create-github-app-token action to d72941d ([#53](https://github.com/chanyou0311/fastapi-agentrouter/issues/53)) ([8764110](https://github.com/chanyou0311/fastapi-agentrouter/commit/8764110343a6ef721576a0a15f8aed1143b18588))
+* **deps:** update actions/checkout digest to 08eba0b ([#38](https://github.com/chanyou0311/fastapi-agentrouter/issues/38)) ([496232a](https://github.com/chanyou0311/fastapi-agentrouter/commit/496232a99cea9f4d50fc292b9f5bec3c0039e82c))
+* **deps:** update actions/create-github-app-token action to v2 ([#54](https://github.com/chanyou0311/fastapi-agentrouter/issues/54)) ([5af7a48](https://github.com/chanyou0311/fastapi-agentrouter/commit/5af7a4812e6a98fe95b2d24ecc1f2a0c9400d8ed))
+
 ## [0.4.1](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.0...v0.4.1) (2025-08-14)
 
 
