@@ -10,26 +10,24 @@ from ..integrations.slack import router as slack_router
 
 
 @asynccontextmanager
-async def router_lifespan(app: APIRouter) -> AsyncIterator[None]:
+async def lifespan(app: APIRouter) -> AsyncIterator[None]:
     """Router lifespan manager with auto-warmup for configured services."""
     settings = get_settings()
 
     # Auto-warmup Vertex AI engine if configured
     if settings.is_vertexai_enabled():
-        try:
-            from ..agents.vertexai.dependencies import warmup_vertex_ai_engine
+        from ..agents.vertexai.dependencies import get_vertex_ai_agent_engine
 
-            warmup_vertex_ai_engine()
-        except Exception as e:
-            # Log but don't fail startup if warmup fails
-            print(f"⚠️  Failed to warmup Vertex AI engine during startup: {e}")
+        # Call the function to warm up the cache
+        get_vertex_ai_agent_engine(settings)
+        print("✅ Vertex AI agent engine warmed up successfully")
 
     yield
     # Cleanup on shutdown (if needed in the future)
 
 
 # Create main router with /agent prefix and lifespan
-router = APIRouter(prefix="/agent", lifespan=router_lifespan)
+router = APIRouter(prefix="/agent", lifespan=lifespan)
 
 # Include Slack router
 router.include_router(slack_router)
