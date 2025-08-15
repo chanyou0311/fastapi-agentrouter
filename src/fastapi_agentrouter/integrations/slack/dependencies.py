@@ -67,6 +67,16 @@ def get_slack_app(
     app_mention: Annotated[Callable[[dict, Any, dict], None], Depends(get_app_mention)],
 ) -> "SlackApp":
     """Create and configure Slack App with agent dependency."""
+    # Auto-warmup Vertex AI engine if configured
+    if settings.is_vertexai_enabled():
+        try:
+            from ...agents.vertexai.dependencies import warmup_vertex_ai_engine
+
+            warmup_vertex_ai_engine()
+        except Exception:
+            # Silently ignore warmup failures to not block Slack initialization
+            pass
+
     try:
         from slack_bolt import App as SlackApp
     except ImportError as e:

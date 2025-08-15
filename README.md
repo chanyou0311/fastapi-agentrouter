@@ -107,29 +107,11 @@ app.dependency_overrides[get_agent_placeholder] = get_custom_agent
 app.include_router(router)
 ```
 
-### Vertex AI Engine Warmup (Performance Optimization)
+### Vertex AI Engine Auto-Warmup (Performance Optimization)
 
-When using Vertex AI agents, the initial connection can be slow, potentially causing timeouts with Slack's 3-second `ack()` requirement. Use the warmup feature to pre-initialize the agent engine:
+When using Vertex AI agents with Slack integration, the library automatically warms up the agent engine to prevent timeouts with Slack's 3-second `ack()` requirement. The warmup happens transparently on the first Slack request, ensuring the agent engine is cached and ready without any additional configuration needed.
 
-```python
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-import fastapi_agentrouter
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Warmup Vertex AI agent engine on startup
-    fastapi_agentrouter.warmup_vertex_ai_engine()
-    yield
-
-app = FastAPI(lifespan=lifespan)
-app.dependency_overrides[fastapi_agentrouter.get_agent] = (
-    fastapi_agentrouter.get_vertex_ai_agent_engine
-)
-app.include_router(fastapi_agentrouter.router)
-```
-
-This ensures the agent engine is cached and ready before the first request, preventing `ClientDisconnect` errors.
+This automatic warmup prevents `ClientDisconnect` errors that could occur due to slow initial connections to Vertex AI.
 
 ### Disabling Slack Integration
 
