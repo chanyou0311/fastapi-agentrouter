@@ -1,21 +1,27 @@
 """Vertex AI dependencies for FastAPI AgentRouter."""
 
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from ...core.settings import SettingsDep
+from ...core.settings import get_settings
 
 if TYPE_CHECKING:
     from vertexai.agent_engines import AgentEngine
 
 
-def get_vertex_ai_agent_engine(settings: SettingsDep) -> "AgentEngine":
+@lru_cache
+def get_vertex_ai_agent_engine() -> "AgentEngine":
     """Get the Vertex AI AgentEngine instance for the specified agent.
+
+    This function is cached to avoid expensive initialization on every request.
+    The engine instance is automatically warmed up when the router is included
+    in your FastAPI app, ensuring fast response times from the first request.
 
     Args:
         settings: The settings instance with Vertex AI configuration
 
     Returns:
-        AgentEngine: The Vertex AI agent engine instance
+        AgentEngine: The cached Vertex AI agent engine instance
 
     Raises:
         ValueError: If agent is not found or multiple agents found
@@ -31,6 +37,8 @@ def get_vertex_ai_agent_engine(settings: SettingsDep) -> "AgentEngine":
 
         app.dependency_overrides[get_agent] = get_vertex_ai_agent_engine
     """
+    settings = get_settings()
+
     if not settings.is_vertexai_enabled():
         raise RuntimeError(
             "Vertex AI settings not configured. Please set the required "
