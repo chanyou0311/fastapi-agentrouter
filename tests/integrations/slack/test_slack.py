@@ -112,6 +112,182 @@ def test_slack_events_endpoint():
         assert response.status_code == 200
 
 
+def test_slack_app_mention_thread_mode():
+    """Test app mention creates thread response."""
+    from fastapi_agentrouter.integrations.slack.dependencies import get_app_mention
+
+    # Create mock agent
+    mock_agent = Mock()
+    mock_agent.stream_query = Mock(
+        return_value=[{"content": {"parts": [{"text": "Hello from agent!"}]}}]
+    )
+
+    # Get the app mention handler
+    app_mention_handler = get_app_mention(mock_agent)
+
+    # Mock event with thread_ts
+    event = {
+        "user": "U123",
+        "text": "<@UBOT> Hello",
+        "ts": "1234567890.123456",
+        "thread_ts": "1234567890.123456",
+    }
+
+    # Mock say function
+    mock_say = Mock()
+
+    # Call the handler
+    app_mention_handler(event, mock_say, {})
+
+    # Verify say was called with thread_ts
+    mock_say.assert_called_once_with(
+        text="Hello from agent!", thread_ts="1234567890.123456"
+    )
+
+    # Verify agent was called with correct session_id and user_id
+    mock_agent.stream_query.assert_called_once_with(
+        user_id="1234567890.123456",
+        session_id="1234567890.123456",
+        message="<@UBOT> Hello",
+    )
+
+
+def test_slack_message_in_thread():
+    """Test message handler processes thread messages correctly."""
+    from fastapi_agentrouter.core.settings import Settings, SlackSettings
+    from fastapi_agentrouter.integrations.slack.dependencies import get_message
+
+    # Create mock agent
+    mock_agent = Mock()
+    mock_agent.stream_query = Mock(
+        return_value=[{"content": {"parts": [{"text": "Response to thread message"}]}}]
+    )
+
+    # Create mock settings
+    mock_settings = Settings(
+        slack=SlackSettings(bot_token="test-token", signing_secret="test-secret")
+    )
+
+    # Get the message handler
+    message_handler = get_message(mock_agent, mock_settings)
+
+    # Mock event for thread message
+    event = {
+        "user": "U123",
+        "text": "Follow-up question",
+        "ts": "1234567890.234567",
+        "thread_ts": "1234567890.123456",
+        "channel": "C123",
+    }
+
+    # Mock body with bot user ID
+    body = {"authorizations": [{"user_id": "UBOT"}]}
+
+    # Mock say function
+    mock_say = Mock()
+
+    # Mock client with conversations.replies
+    mock_client = Mock()
+    mock_client.conversations_replies = Mock(
+        return_value={
+            "messages": [
+                {"text": "<@UBOT> Initial question", "ts": "1234567890.123456"}
+            ]
+        }
+    )
+
+    # Call the handler
+    message_handler(event, mock_say, body, mock_client)
+
+    # Verify say was called with thread_ts
+    mock_say.assert_called_once_with(
+        text="Response to thread message", thread_ts="1234567890.123456"
+    )
+
+    # Verify agent was called with correct session_id and user_id
+    mock_agent.stream_query.assert_called_once_with(
+        user_id="1234567890.123456",
+        session_id="1234567890.123456",
+        message="Follow-up question",
+    )
+
+
+def test_slack_message_ignore_non_thread():
+    """Test message handler ignores non-thread messages."""
+    from fastapi_agentrouter.core.settings import Settings, SlackSettings
+    from fastapi_agentrouter.integrations.slack.dependencies import get_message
+
+    # Create mock agent
+    mock_agent = Mock()
+    mock_agent.stream_query = Mock()
+
+    # Create mock settings
+    mock_settings = Settings(
+        slack=SlackSettings(bot_token="test-token", signing_secret="test-secret")
+    )
+
+    # Get the message handler
+    message_handler = get_message(mock_agent, mock_settings)
+
+    # Mock event for non-thread message (no thread_ts)
+    event = {
+        "user": "U123",
+        "text": "Regular message",
+        "ts": "1234567890.123456",
+        "channel": "C123",
+    }
+
+    # Mock say and client
+    mock_say = Mock()
+    mock_client = Mock()
+
+    # Call the handler
+    message_handler(event, mock_say, {}, mock_client)
+
+    # Verify nothing was called
+    mock_say.assert_not_called()
+    mock_agent.stream_query.assert_not_called()
+
+
+def test_slack_message_ignore_bot_messages():
+    """Test message handler ignores bot messages."""
+    from fastapi_agentrouter.core.settings import Settings, SlackSettings
+    from fastapi_agentrouter.integrations.slack.dependencies import get_message
+
+    # Create mock agent
+    mock_agent = Mock()
+    mock_agent.stream_query = Mock()
+
+    # Create mock settings
+    mock_settings = Settings(
+        slack=SlackSettings(bot_token="test-token", signing_secret="test-secret")
+    )
+
+    # Get the message handler
+    message_handler = get_message(mock_agent, mock_settings)
+
+    # Mock event for bot message
+    event = {
+        "user": "U123",
+        "text": "Bot message",
+        "ts": "1234567890.234567",
+        "thread_ts": "1234567890.123456",
+        "bot_id": "B123",
+        "channel": "C123",
+    }
+
+    # Mock say and client
+    mock_say = Mock()
+    mock_client = Mock()
+
+    # Call the handler
+    message_handler(event, mock_say, {}, mock_client)
+
+    # Verify nothing was called
+    mock_say.assert_not_called()
+    mock_agent.stream_query.assert_not_called()
+
+
 def test_slack_missing_library():
     """Test error when slack-bolt is not installed."""
 

@@ -5,11 +5,12 @@ FastAPI AgentRouter provides full-featured Slack integration using [Slack Bolt f
 ## Features
 
 - **App mentions** - Respond when your bot is mentioned
+- **Thread mode** - Automatic thread-based conversations with context persistence
 - **Direct messages** - Handle DMs to your bot
 - **Slash commands** - Support custom slash commands
 - **Interactive components** - Handle button clicks and select menus
 - **OAuth flow** - Built-in OAuth installation support
-- **Thread support** - Maintain conversation context in threads
+- **Session management** - Maintain conversation context per thread
 - **Lazy listeners** - Optimized for serverless environments
 
 ## Installation
@@ -101,15 +102,33 @@ The Slack integration provides a single endpoint:
 
 ### App Mentions
 
-When your bot is mentioned in a channel:
+When your bot is mentioned, it automatically creates or continues a thread:
 
 ```python
-# User: @YourBot help me with something
+# User mentions bot in channel: @YourBot help me with something
+# Bot responds in a new thread
 
 # Your agent receives:
 # message: "@YourBot help me with something"
-# user_id: "U123456"
-# session_id: "slack_C789_1234567890.123456"
+# user_id: "1234567890.123456"  # Thread timestamp for context
+# session_id: "1234567890.123456"  # Same as user_id for thread context
+# platform: "slack"
+# channel: "C789"
+# thread_ts: "1234567890.123456"
+```
+
+### Thread Messages
+
+After initial mention, users can continue without mentioning the bot:
+
+```python
+# User follows up in thread: "What about error handling?"
+# (No @YourBot mention needed)
+
+# Your agent receives:
+# message: "What about error handling?"
+# user_id: "1234567890.123456"  # Original thread timestamp
+# session_id: "1234567890.123456"  # Same session continues
 # platform: "slack"
 # channel: "C789"
 # thread_ts: "1234567890.123456"
@@ -167,13 +186,33 @@ def stream_query(self, **kwargs):
         yield word
 ```
 
-## Thread Support
+## Thread Mode
 
-The integration automatically maintains thread context:
+The integration provides intelligent thread-based conversations:
 
-1. Responses are sent to the same thread where the mention occurred
-2. Thread timestamp is included in the session ID for context persistence
-3. Your agent can use the session ID to maintain conversation state
+### Automatic Thread Creation
+When a user mentions your bot, the response is automatically sent as a thread reply:
+- Creates a new thread if the mention is in the main channel
+- Continues the existing thread if the mention is already in a thread
+
+### Context Persistence
+Each thread maintains its own conversation context:
+- The thread timestamp (`thread_ts`) is used as both `session_id` and `user_id`
+- This allows multiple users to participate in the same thread conversation
+- The agent maintains context across all messages in the thread
+
+### Thread Continuation
+Once a bot is mentioned in a thread, users can continue the conversation without mentioning the bot again:
+1. User mentions bot: `@YourBot help with Python`
+2. Bot responds in thread
+3. User can follow up in the same thread: `What about async?` (no mention needed)
+4. Bot continues the conversation with full context
+
+### Implementation Details
+- **session_id**: Thread timestamp (e.g., "1234567890.123456")
+- **user_id**: Also uses thread timestamp for consistent context
+- Messages in threads without initial bot mention are ignored
+- Bot messages are automatically filtered to prevent loops
 
 ## Serverless Deployment
 
