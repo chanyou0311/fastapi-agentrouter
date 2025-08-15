@@ -2,7 +2,7 @@
 
 __version__ = "0.4.2"
 
-from .agents.vertexai import get_vertex_ai_agent_engine
+from .agents.vertexai import get_vertex_ai_agent_engine, warmup_vertex_ai_engine
 from .core.dependencies import AgentProtocol, get_agent
 from .core.settings import Settings, get_settings
 from .routers import router
@@ -15,4 +15,5 @@ __all__ = [
     "get_settings",
     "get_vertex_ai_agent_engine",
     "router",
+    "warmup_vertex_ai_engine",
 ]
