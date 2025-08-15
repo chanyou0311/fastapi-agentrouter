@@ -101,25 +101,16 @@ def get_vertex_ai_agent_engine(settings: SettingsDep) -> "AgentEngine":
 def warmup_vertex_ai_engine() -> None:
     """Warmup the Vertex AI agent engine by initializing it proactively.
 
-    Note: This function is automatically called when using Slack integration
-    with Vertex AI, so manual warmup is typically not required.
+    Note: This function is automatically called when the fastapi_agentrouter.router
+    is included in your FastAPI app and Vertex AI is configured, so manual warmup
+    is typically not required.
 
     This function pre-loads the cached engine instance so that subsequent
     requests can use it immediately, avoiding initialization delays on the
     first request.
 
-    Manual usage (optional):
-        from fastapi import FastAPI
-        from contextlib import asynccontextmanager
-        import fastapi_agentrouter
-
-        @asynccontextmanager
-        async def lifespan(app: FastAPI):
-            # Optional manual warmup on startup
-            fastapi_agentrouter.warmup_vertex_ai_engine()
-            yield
-
-        app = FastAPI(lifespan=lifespan)
+    The router's lifespan automatically handles warmup, but you can still call
+    this manually if needed for custom initialization flows.
     """
     try:
         # Call the cached function to initialize the engine
