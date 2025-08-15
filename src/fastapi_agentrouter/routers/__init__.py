@@ -18,9 +18,7 @@ async def lifespan(app: APIRouter) -> AsyncIterator[None]:
     if settings.is_vertexai_enabled():
         from ..agents.vertexai.dependencies import get_vertex_ai_agent_engine
 
-        # Call the function to warm up the cache
         get_vertex_ai_agent_engine(settings)
-        print("✅ Vertex AI agent engine warmed up successfully")
 
     yield
     # Cleanup on shutdown (if needed in the future)
