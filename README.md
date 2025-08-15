@@ -107,6 +107,12 @@ app.dependency_overrides[get_agent_placeholder] = get_custom_agent
 app.include_router(router)
 ```
 
+### Vertex AI Engine Auto-Warmup
+
+When using Vertex AI agents, the library automatically caches and warms up the agent engine during router initialization. This prevents timeouts with Slack's 3-second `ack()` requirement and ensures fast response times from the first request.
+
+The `get_vertex_ai_agent_engine` function uses `@lru_cache` decorator, and the router's lifespan automatically calls it on startup when Vertex AI is configured. No additional configuration is needed.
+
 ### Disabling Slack Integration
 
 ```python
