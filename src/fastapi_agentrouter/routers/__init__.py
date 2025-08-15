@@ -18,7 +18,7 @@ async def lifespan(app: APIRouter) -> AsyncIterator[None]:
     if settings.is_vertexai_enabled():
         from ..agents.vertexai.dependencies import get_vertex_ai_agent_engine
 
-        get_vertex_ai_agent_engine(settings)
+        get_vertex_ai_agent_engine()
 
     yield
     # Cleanup on shutdown (if needed in the future)

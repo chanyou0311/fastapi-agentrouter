@@ -3,14 +3,14 @@
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from ...core.settings import SettingsDep
+from ...core.settings import get_settings
 
 if TYPE_CHECKING:
     from vertexai.agent_engines import AgentEngine
 
 
 @lru_cache
-def get_vertex_ai_agent_engine(settings: SettingsDep) -> "AgentEngine":
+def get_vertex_ai_agent_engine() -> "AgentEngine":
     """Get the Vertex AI AgentEngine instance for the specified agent.
 
     This function is cached to avoid expensive initialization on every request.
@@ -37,6 +37,8 @@ def get_vertex_ai_agent_engine(settings: SettingsDep) -> "AgentEngine":
 
         app.dependency_overrides[get_agent] = get_vertex_ai_agent_engine
     """
+    settings = get_settings()
+
     if not settings.is_vertexai_enabled():
         raise RuntimeError(
             "Vertex AI settings not configured. Please set the required "
