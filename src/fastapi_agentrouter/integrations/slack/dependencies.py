@@ -53,7 +53,8 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         logger.info(f"App mentioned by user {user} in thread {thread_id}: {text}")
 
         # Check if a session already exists for this thread
-        existing_sessions = agent.list_sessions(user_id=thread_id)
+        sessions_response = agent.list_sessions(user_id=thread_id)
+        existing_sessions = sessions_response.get("sessions", [])
 
         if existing_sessions:
             # Use the existing session for this thread
@@ -135,7 +136,8 @@ def get_message(agent: AgentDep) -> Callable[[dict, Any, Any, dict], None]:
         thread_id = f"{channel}:{thread_ts}"
 
         # Check if a session already exists for this thread
-        existing_sessions = agent.list_sessions(user_id=thread_id)
+        sessions_response = agent.list_sessions(user_id=thread_id)
+        existing_sessions = sessions_response.get("sessions", [])
 
         if existing_sessions:
             # Use the existing session for this thread
