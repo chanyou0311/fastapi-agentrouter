@@ -29,7 +29,8 @@ class AgentProtocol(Protocol):
     ) -> dict[str, Any]:
         """List sessions for a given user.
 
-        Returns a dictionary with a 'sessions' key containing a list of session dictionaries.
+        Returns a dictionary with a 'sessions' key containing a list of
+        session dictionaries.
         """
         ...
 

@@ -162,7 +162,7 @@ def test_slack_missing_library():
 def test_thread_based_session_new_thread():
     """Test that a new thread creates a new session."""
     mock_agent = Mock()
-    mock_agent.list_sessions = Mock(return_value=[])
+    mock_agent.list_sessions = Mock(return_value={"sessions": []})
     mock_agent.create_session = Mock(return_value={"id": "session_123"})
     mock_agent.stream_query = Mock(
         return_value=[{"content": {"parts": [{"text": "Response text"}]}}]
@@ -204,7 +204,9 @@ def test_thread_based_session_new_thread():
 def test_thread_based_session_existing_thread():
     """Test that an existing thread reuses the same session."""
     mock_agent = Mock()
-    mock_agent.list_sessions = Mock(return_value=[{"id": "existing_session_456"}])
+    mock_agent.list_sessions = Mock(
+        return_value={"sessions": [{"id": "existing_session_456"}]}
+    )
     mock_agent.create_session = Mock()  # Should not be called
     mock_agent.stream_query = Mock(
         return_value=[
@@ -256,7 +258,7 @@ def test_thread_based_session_different_threads():
 
     # First call for thread1 - no existing session
     # Second call for thread2 - no existing session
-    mock_agent.list_sessions = Mock(side_effect=[[], []])
+    mock_agent.list_sessions = Mock(side_effect=[{"sessions": []}, {"sessions": []}])
     mock_agent.create_session = Mock(
         side_effect=[{"id": "session_thread1"}, {"id": "session_thread2"}]
     )
@@ -316,8 +318,10 @@ def test_thread_based_session_multiple_messages_same_thread():
     # First message creates a session, second message finds it
     mock_agent.list_sessions = Mock(
         side_effect=[
-            [],  # First call - no session exists
-            [{"id": "session_same_thread"}],  # Second call - session exists
+            {"sessions": []},  # First call - no session exists
+            {
+                "sessions": [{"id": "session_same_thread"}]
+            },  # Second call - session exists
         ]
     )
     mock_agent.create_session = Mock(return_value={"id": "session_same_thread"})
