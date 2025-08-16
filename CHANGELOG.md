@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.5.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.2...v0.5.0) (2025-08-16)
+
+
+### Features
+
+* add Vertex AI engine warmup to prevent ClientDisconnect errors ([#71](https://github.com/chanyou0311/fastapi-agentrouter/issues/71)) ([a55bed7](https://github.com/chanyou0311/fastapi-agentrouter/commit/a55bed777e1b15ae8ae8e78bd3f7576923545ed5))
+* enable Slack bot to reply in threads ([#73](https://github.com/chanyou0311/fastapi-agentrouter/issues/73)) ([b73dacd](https://github.com/chanyou0311/fastapi-agentrouter/commit/b73dacd3988036ba71e801d75dac81a5fc7aa2fa))
+* explicitly create and use sessions in Slack app_mention handler ([#72](https://github.com/chanyou0311/fastapi-agentrouter/issues/72)) ([8559dfb](https://github.com/chanyou0311/fastapi-agentrouter/commit/8559dfba6abdf7ce6187132e56e05b3c538229e7))
+* export get_vertex_ai_agent_engine for easy Vertex AI integration ([#60](https://github.com/chanyou0311/fastapi-agentrouter/issues/60)) ([a3e31b1](https://github.com/chanyou0311/fastapi-agentrouter/commit/a3e31b1e61e43f663096add62af6955c0a8d39e3))
+* implement thread-based session management for Slack integration ([#74](https://github.com/chanyou0311/fastapi-agentrouter/issues/74)) ([e109f0e](https://github.com/chanyou0311/fastapi-agentrouter/commit/e109f0e2b332de220f4e21b1d3191097816a8ef8))
+* improve type hints for AgentProtocol and add examples gitignore ([#58](https://github.com/chanyou0311/fastapi-agentrouter/issues/58)) ([2f85664](https://github.com/chanyou0311/fastapi-agentrouter/commit/2f85664c5274b38f70ae75b9dcf1db7adc4f757e))
+
+
+### Bug Fixes
+
+* remove debug say() call in Slack app_mention handler ([#61](https://github.com/chanyou0311/fastapi-agentrouter/issues/61)) ([eff390e](https://github.com/chanyou0311/fastapi-agentrouter/commit/eff390e20953dcd54a7ed202d2d60ed573949490))
+
+
+### Documentation
+
+* add PR feedback handling guidelines to CLAUDE.md ([#68](https://github.com/chanyou0311/fastapi-agentrouter/issues/68)) ([6459de6](https://github.com/chanyou0311/fastapi-agentrouter/commit/6459de68ebc98fa415992f7f06f0f10844155e9c))
+
 ## [0.4.2](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.1...v0.4.2) (2025-08-14)
 
 
