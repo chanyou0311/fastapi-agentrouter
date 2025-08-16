@@ -42,16 +42,39 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         """Handle app mention events with agent."""
         user: str = event.get("user", "u_123")
         text: str = event.get("text", "")
-        logger.info(f"App mentioned by user {user}: {text}")
+        channel: str = event.get("channel", "c_123")
 
-        # Create a session for this conversation
-        session = agent.create_session(user_id=user)
-        session_id = session.get("id")
-        logger.info(f"Created session {session_id} for user {user}")
+        # Determine the thread identifier
+        # If thread_ts exists, this is a message in a thread
+        # If not, use the ts of the message itself (it's a new thread)
+        thread_ts: str = event.get("thread_ts") or event.get("ts", "")
+
+        # Create a unique identifier for the thread
+        # Using channel + thread_ts as the unique key for session management
+        thread_id = (
+            f"{channel}:{thread_ts}"
+            if thread_ts
+            else f"{channel}:{event.get('ts', 'unknown')}"
+        )
+
+        logger.info(f"App mentioned by user {user} in thread {thread_id}: {text}")
+
+        # Check if a session already exists for this thread
+        existing_sessions = agent.list_sessions(user_id=thread_id)
+
+        if existing_sessions:
+            # Use the existing session for this thread
+            session_id = existing_sessions[0].get("id")
+            logger.info(f"Using existing session {session_id} for thread {thread_id}")
+        else:
+            # Create a new session for this thread
+            session = agent.create_session(user_id=thread_id)
+            session_id = session.get("id")
+            logger.info(f"Created new session {session_id} for thread {thread_id}")
 
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id=user,
+            user_id=thread_id,
             session_id=session_id,
             message=text,
         ):
@@ -62,7 +85,13 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
             ):
                 full_response_text += event_data["content"]["parts"][0]["text"]
 
-        say(full_response_text)
+        # If this is a thread, reply in the thread
+        # Otherwise, start a new thread with the reply
+        if thread_ts:
+            say(text=full_response_text, thread_ts=thread_ts)
+        else:
+            # For new messages, reply in a thread using the original message ts
+            say(text=full_response_text, thread_ts=event.get("ts"))
 
     return app_mention
 
