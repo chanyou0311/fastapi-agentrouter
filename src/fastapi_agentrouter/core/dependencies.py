@@ -26,10 +26,11 @@ class AgentProtocol(Protocol):
         *,
         user_id: str | None = None,
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """List sessions for a given user.
 
-        Returns a list of session dictionaries.
+        Returns a dictionary with a 'sessions' key containing a list of
+        session dictionaries.
         """
         ...
 

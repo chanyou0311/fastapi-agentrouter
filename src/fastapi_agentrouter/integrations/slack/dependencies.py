@@ -45,16 +45,30 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         channel: str = event.get("channel", "")
         # Get thread_ts from event (if in thread) or use the event's ts
         thread_ts: str = event.get("thread_ts") or event.get("ts", "")
-        logger.info(f"App mentioned by user {user} in channel {channel}: {text}")
 
-        # Create a session for this conversation
-        session = agent.create_session(user_id=user)
-        session_id = session.get("id")
-        logger.info(f"Created session {session_id} for user {user}")
+        # Create a unique identifier for the thread
+        # Using channel + thread_ts as the unique key for session management
+        thread_id = f"{channel}:{thread_ts}"
+
+        logger.info(f"App mentioned by user {user} in thread {thread_id}: {text}")
+
+        # Check if a session already exists for this thread
+        sessions_response = agent.list_sessions(user_id=thread_id)
+        existing_sessions = sessions_response.get("sessions", [])
+
+        if existing_sessions:
+            # Use the existing session for this thread
+            session_id = existing_sessions[0].get("id")
+            logger.info(f"Using existing session {session_id} for thread {thread_id}")
+        else:
+            # Create a new session for this thread
+            session = agent.create_session(user_id=thread_id)
+            session_id = session.get("id")
+            logger.info(f"Created new session {session_id} for thread {thread_id}")
 
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id=user,
+            user_id=thread_id,
             session_id=session_id,
             message=text,
         ):
@@ -106,8 +120,8 @@ def get_message(agent: AgentDep) -> Callable[[dict, Any, Any, dict], None]:
 
         # Check if bot has sent any messages in this thread
         bot_has_responded = False
-        for message in result.get("messages", []):
-            if message.get("user") == bot_user_id:
+        for msg in result.get("messages", []):
+            if msg.get("user") == bot_user_id:
                 bot_has_responded = True
                 break
 
@@ -118,14 +132,26 @@ def get_message(agent: AgentDep) -> Callable[[dict, Any, Any, dict], None]:
 
         logger.info(f"Message in thread from user {user} in channel {channel}: {text}")
 
-        # Create a session for this conversation
-        session = agent.create_session(user_id=user)
-        session_id = session.get("id")
-        logger.info(f"Created session {session_id} for user {user}")
+        # Create a unique identifier for the thread (same as in app_mention)
+        thread_id = f"{channel}:{thread_ts}"
+
+        # Check if a session already exists for this thread
+        sessions_response = agent.list_sessions(user_id=thread_id)
+        existing_sessions = sessions_response.get("sessions", [])
+
+        if existing_sessions:
+            # Use the existing session for this thread
+            session_id = existing_sessions[0].get("id")
+            logger.info(f"Using existing session {session_id} for thread {thread_id}")
+        else:
+            # Create a new session for this thread
+            session = agent.create_session(user_id=thread_id)
+            session_id = session.get("id")
+            logger.info(f"Created new session {session_id} for thread {thread_id}")
 
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id=user,
+            user_id=thread_id,
             session_id=session_id,
             message=text,
         ):
