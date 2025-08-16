@@ -21,6 +21,18 @@ class AgentProtocol(Protocol):
         """
         ...
 
+    def list_sessions(
+        self,
+        *,
+        user_id: str | None = None,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """List sessions for a given user.
+
+        Returns a list of session dictionaries.
+        """
+        ...
+
     def stream_query(
         self,
         *,
