@@ -44,9 +44,15 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         text: str = event.get("text", "")
         logger.info(f"App mentioned by user {user}: {text}")
 
+        # Create a session for this conversation
+        session = agent.create_session(user_id=user)
+        session_id = session.get("id")
+        logger.info(f"Created session {session_id} for user {user}")
+
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id="u_123",
+            user_id=user,
+            session_id=session_id,
             message=text,
         ):
             if (
