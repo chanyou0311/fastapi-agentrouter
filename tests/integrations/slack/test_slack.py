@@ -144,10 +144,10 @@ def test_slack_app_mention_thread_mode():
         text="Hello from agent!", thread_ts="1234567890.123456"
     )
 
-    # Verify agent was called with correct session_id and user_id
+    # Verify agent was called with correct user_id (actual Slack user ID)
+    # Note: session_id is omitted as per VertexAI Agent Engine specs
     mock_agent.stream_query.assert_called_once_with(
-        user_id="1234567890.123456",
-        session_id="1234567890.123456",
+        user_id="U123",
         message="<@UBOT> Hello",
     )
 
@@ -204,10 +204,10 @@ def test_slack_message_in_thread():
         text="Response to thread message", thread_ts="1234567890.123456"
     )
 
-    # Verify agent was called with correct session_id and user_id
+    # Verify agent was called with correct user_id (actual Slack user ID)
+    # Note: session_id is omitted as per VertexAI Agent Engine specs
     mock_agent.stream_query.assert_called_once_with(
-        user_id="1234567890.123456",
-        session_id="1234567890.123456",
+        user_id="U123",
         message="Follow-up question",
     )
 

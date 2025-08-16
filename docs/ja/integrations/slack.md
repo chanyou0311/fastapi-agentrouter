@@ -110,11 +110,11 @@ Slack統合は単一のエンドポイントを提供：
 
 # エージェントが受け取る内容:
 # message: "@YourBot 何か手伝ってください"
-# user_id: "1234567890.123456"  # コンテキスト用のスレッドタイムスタンプ
-# session_id: "1234567890.123456"  # スレッドコンテキスト用にuser_idと同じ
+# user_id: "U123456"  # 実際のSlackユーザーID
 # platform: "slack"
 # channel: "C789"
 # thread_ts: "1234567890.123456"
+# 注: session_idはVertexAI Agent Engineによって自動管理されます
 ```
 
 ### スレッドメッセージ
@@ -127,11 +127,11 @@ Slack統合は単一のエンドポイントを提供：
 
 # エージェントが受け取る内容:
 # message: "エラー処理についてはどうですか？"
-# user_id: "1234567890.123456"  # 元のスレッドタイムスタンプ
-# session_id: "1234567890.123456"  # 同じセッションが継続
+# user_id: "U123456"  # 同じSlackユーザーID
 # platform: "slack"
 # channel: "C789"
 # thread_ts: "1234567890.123456"
+# 注: 会話コンテキストはVertexAIセッション管理を通じて維持されます
 ```
 
 ### ダイレクトメッセージ
@@ -150,8 +150,8 @@ Slack統合は単一のエンドポイントを提供：
 - `platform`: 常に"slack"
 - `channel`: SlackチャンネルID
 - `thread_ts`: 会話コンテキストを維持するためのスレッドタイムスタンプ
-- `user_id`: SlackユーザーID
-- `session_id`: チャンネルとスレッドを組み合わせたユニークなセッション識別子
+- `user_id`: 実際のSlackユーザーID（例："U123456"）
+- セッション管理はVertexAI Agent Engineによって自動的に処理されます
 
 ## レスポンス処理
 
@@ -197,9 +197,10 @@ def stream_query(self, **kwargs):
 
 ### コンテキスト永続性
 各スレッドは独自の会話コンテキストを維持：
-- スレッドタイムスタンプ（`thread_ts`）が`session_id`と`user_id`の両方として使用される
-- これにより複数のユーザーが同じスレッド会話に参加可能
-- エージェントはスレッド内のすべてのメッセージにわたってコンテキストを維持
+- 実際のSlackユーザーIDが適切なユーザー識別のために使用される
+- セッション管理はVertexAI Agent Engineによって自動的に処理される
+- スレッドコンテキストはSlackのスレッド返信メカニズムを通じて維持される
+- 複数のユーザーが適切なユーザー追跡とともに同じスレッドに参加可能
 
 ### スレッド継続
 スレッドでボットが一度メンションされると、ユーザーは再度メンションせずに会話を継続可能：
@@ -209,8 +210,8 @@ def stream_query(self, **kwargs):
 4. ボットは完全なコンテキストで会話を継続
 
 ### 実装の詳細
-- **session_id**: スレッドタイムスタンプ（例: "1234567890.123456"）
-- **user_id**: 一貫したコンテキストのためスレッドタイムスタンプも使用
+- **user_id**: 適切なユーザー識別のための実際のSlackユーザーID（例："U123456"）
+- **セッション管理**: VertexAI Agent Engineによって自動的に処理される
 - 初期のボットメンションがないスレッドのメッセージは無視される
 - ループを防ぐためボットメッセージは自動的にフィルタリング
 
@@ -281,16 +282,16 @@ pip install fastapi-agentrouter[slack]
 
 ## 高度な設定
 
-### カスタムセッション管理
+### ユーザー識別
 
 ```python
 class MyAgent:
-    def stream_query(self, *, session_id: str, **kwargs):
-        # session_idを使用して会話状態を維持
-        # フォーマット: "slack_{channel}_{thread_ts}"
-        channel = session_id.split("_")[1]
-        thread = session_id.split("_")[2]
-        # セッションロジックを実装
+    def stream_query(self, *, user_id: str, **kwargs):
+        # user_idを使用して特定のSlackユーザーを識別
+        # user_idは実際のSlackユーザーID（例："U123456"）
+        # セッション管理はVertexAIによって自動的に処理される
+        user_profile = self.get_user_profile(user_id)
+        # ユーザー固有のロジックを実装
         ...
 ```
 

@@ -110,11 +110,11 @@ When your bot is mentioned, it automatically creates or continues a thread:
 
 # Your agent receives:
 # message: "@YourBot help me with something"
-# user_id: "1234567890.123456"  # Thread timestamp for context
-# session_id: "1234567890.123456"  # Same as user_id for thread context
+# user_id: "U123456"  # Actual Slack user ID
 # platform: "slack"
 # channel: "C789"
 # thread_ts: "1234567890.123456"
+# Note: session_id is handled automatically by VertexAI Agent Engine
 ```
 
 ### Thread Messages
@@ -127,11 +127,11 @@ After initial mention, users can continue without mentioning the bot:
 
 # Your agent receives:
 # message: "What about error handling?"
-# user_id: "1234567890.123456"  # Original thread timestamp
-# session_id: "1234567890.123456"  # Same session continues
+# user_id: "U123456"  # Same Slack user ID
 # platform: "slack"
 # channel: "C789"
 # thread_ts: "1234567890.123456"
+# Note: Conversation context is maintained through VertexAI session management
 ```
 
 ### Direct Messages
@@ -150,8 +150,8 @@ The agent receives additional Slack-specific context in the `stream_query` kwarg
 - `platform`: Always "slack"
 - `channel`: Slack channel ID
 - `thread_ts`: Thread timestamp for maintaining conversation context
-- `user_id`: Slack user ID
-- `session_id`: Unique session identifier combining channel and thread
+- `user_id`: Actual Slack user ID (e.g., "U123456")
+- Session management is handled automatically by VertexAI Agent Engine
 
 ## Response Handling
 
@@ -197,9 +197,10 @@ When a user mentions your bot, the response is automatically sent as a thread re
 
 ### Context Persistence
 Each thread maintains its own conversation context:
-- The thread timestamp (`thread_ts`) is used as both `session_id` and `user_id`
-- This allows multiple users to participate in the same thread conversation
-- The agent maintains context across all messages in the thread
+- Actual Slack user IDs are used for proper user identification
+- Session management is handled automatically by VertexAI Agent Engine
+- Thread context is maintained through Slack's thread reply mechanism
+- Multiple users can participate in the same thread with proper user tracking
 
 ### Thread Continuation
 Once a bot is mentioned in a thread, users can continue the conversation without mentioning the bot again:
@@ -209,8 +210,8 @@ Once a bot is mentioned in a thread, users can continue the conversation without
 4. Bot continues the conversation with full context
 
 ### Implementation Details
-- **session_id**: Thread timestamp (e.g., "1234567890.123456")
-- **user_id**: Also uses thread timestamp for consistent context
+- **user_id**: Actual Slack user ID (e.g., "U123456") for proper user identification
+- **Session management**: Handled automatically by VertexAI Agent Engine
 - Messages in threads without initial bot mention are ignored
 - Bot messages are automatically filtered to prevent loops
 
@@ -281,16 +282,16 @@ Ensure your app is running and accessible at the public URL you provided to Slac
 
 ## Advanced Configuration
 
-### Custom Session Management
+### User Identification
 
 ```python
 class MyAgent:
-    def stream_query(self, *, session_id: str, **kwargs):
-        # Use session_id to maintain conversation state
-        # Format: "slack_{channel}_{thread_ts}"
-        channel = session_id.split("_")[1]
-        thread = session_id.split("_")[2]
-        # Implement your session logic
+    def stream_query(self, *, user_id: str, **kwargs):
+        # Use user_id to identify the specific Slack user
+        # user_id is the actual Slack user ID (e.g., "U123456")
+        # Session management is handled automatically by VertexAI
+        user_profile = self.get_user_profile(user_id)
+        # Implement your user-specific logic
         ...
 ```
 

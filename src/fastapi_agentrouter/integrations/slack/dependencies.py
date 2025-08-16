@@ -46,15 +46,13 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
 
         logger.info(f"App mentioned by user {user}: {text}")
 
-        # Use thread_ts as session_id and the original message ts as user_id
-        # This allows multiple users to interact within the same thread context
-        session_id = thread_ts
-        user_id = thread_ts  # Use thread identifier for consistent context
+        # Use actual Slack user ID for user_id as per VertexAI Agent Engine specs
+        # Omit session_id since it's optional and let VertexAI handle session management
+        slack_user_id = user
 
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id=user_id,
-            session_id=session_id,
+            user_id=slack_user_id,
             message=text,
         ):
             if (
@@ -114,14 +112,13 @@ def get_message(
 
         logger.info(f"Processing thread message from user {user}: {text}")
 
-        # Use thread_ts as both session_id and user_id for consistent context
-        session_id = thread_ts
-        user_id = thread_ts
+        # Use actual Slack user ID for user_id as per VertexAI Agent Engine specs
+        # Omit session_id since it's optional and let VertexAI handle session management
+        slack_user_id = user
 
         full_response_text = ""
         for event_data in agent.stream_query(
-            user_id=user_id,
-            session_id=session_id,
+            user_id=slack_user_id,
             message=text,
         ):
             if (
