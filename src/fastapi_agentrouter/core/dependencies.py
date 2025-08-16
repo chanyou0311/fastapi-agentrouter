@@ -9,6 +9,18 @@ from fastapi import Depends, HTTPException
 class AgentProtocol(Protocol):
     """Protocol for agent implementations."""
 
+    def create_session(
+        self,
+        *,
+        user_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Create a new session for the agent.
+
+        Returns a dictionary containing at least the session 'id'.
+        """
+        ...
+
     def stream_query(
         self,
         *,
