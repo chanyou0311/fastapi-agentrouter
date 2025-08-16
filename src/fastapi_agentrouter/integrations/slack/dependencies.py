@@ -42,20 +42,13 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
         """Handle app mention events with agent."""
         user: str = event.get("user", "u_123")
         text: str = event.get("text", "")
-        channel: str = event.get("channel", "c_123")
-
-        # Determine the thread identifier
-        # If thread_ts exists, this is a message in a thread
-        # If not, use the ts of the message itself (it's a new thread)
+        channel: str = event.get("channel", "")
+        # Get thread_ts from event (if in thread) or use the event's ts
         thread_ts: str = event.get("thread_ts") or event.get("ts", "")
 
         # Create a unique identifier for the thread
         # Using channel + thread_ts as the unique key for session management
-        thread_id = (
-            f"{channel}:{thread_ts}"
-            if thread_ts
-            else f"{channel}:{event.get('ts', 'unknown')}"
-        )
+        thread_id = f"{channel}:{thread_ts}"
 
         logger.info(f"App mentioned by user {user} in thread {thread_id}: {text}")
 
@@ -85,21 +78,99 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
             ):
                 full_response_text += event_data["content"]["parts"][0]["text"]
 
-        # If this is a thread, reply in the thread
-        # Otherwise, start a new thread with the reply
-        if thread_ts:
-            say(text=full_response_text, thread_ts=thread_ts)
-        else:
-            # For new messages, reply in a thread using the original message ts
-            say(text=full_response_text, thread_ts=event.get("ts"))
+        # Reply in thread
+        say(text=full_response_text, channel=channel, thread_ts=thread_ts)
 
     return app_mention
+
+
+def get_message(agent: AgentDep) -> Callable[[dict, Any, Any, dict], None]:
+    """Get message event handler for thread replies."""
+
+    def message(event: dict, say: Any, client: Any, body: dict) -> None:
+        """Handle message events in threads where bot was previously mentioned."""
+        # Only process messages in threads
+        if "thread_ts" not in event:
+            return
+
+        # Skip if this is a bot message
+        if event.get("bot_id") or event.get("subtype") == "bot_message":
+            return
+
+        user: str = event.get("user", "u_123")
+        text: str = event.get("text", "")
+        channel: str = event.get("channel", "")
+        thread_ts: str = event.get("thread_ts", "")
+
+        # Get bot user ID from the auth info
+        bot_user_id = body.get("authorizations", [{}])[0].get("user_id", "")
+
+        # Skip if the message mentions the bot (app_mention will handle it)
+        if bot_user_id and f"<@{bot_user_id}>" in text:
+            return
+
+        # Check if the bot has participated in this thread
+        # Get thread replies to see if bot has responded before
+        result = client.conversations_replies(
+            channel=channel,
+            ts=thread_ts,
+            limit=100,  # Get recent messages in thread
+        )
+
+        # Check if bot has sent any messages in this thread
+        bot_has_responded = False
+        for msg in result.get("messages", []):
+            if msg.get("user") == bot_user_id:
+                bot_has_responded = True
+                break
+
+        # Only respond if bot has previously participated in the thread
+        if not bot_has_responded:
+            logger.debug(f"Bot has not participated in thread {thread_ts}, skipping")
+            return
+
+        logger.info(f"Message in thread from user {user} in channel {channel}: {text}")
+
+        # Create a unique identifier for the thread (same as in app_mention)
+        thread_id = f"{channel}:{thread_ts}"
+
+        # Check if a session already exists for this thread
+        existing_sessions = agent.list_sessions(user_id=thread_id)
+
+        if existing_sessions:
+            # Use the existing session for this thread
+            session_id = existing_sessions[0].get("id")
+            logger.info(f"Using existing session {session_id} for thread {thread_id}")
+        else:
+            # Create a new session for this thread
+            session = agent.create_session(user_id=thread_id)
+            session_id = session.get("id")
+            logger.info(f"Created new session {session_id} for thread {thread_id}")
+
+        full_response_text = ""
+        for event_data in agent.stream_query(
+            user_id=thread_id,
+            session_id=session_id,
+            message=text,
+        ):
+            if (
+                "content" in event_data
+                and "parts" in event_data["content"]
+                and "text" in event_data["content"]["parts"][0]
+            ):
+                full_response_text += event_data["content"]["parts"][0]["text"]
+
+        # Reply in the same thread
+        say(text=full_response_text, channel=channel, thread_ts=thread_ts)
+
+    return message
 
 
 def get_slack_app(
     settings: SettingsDep,
     ack: Annotated[Callable[[dict, Any], None], Depends(get_ack)],
     app_mention: Annotated[Callable[[dict, Any, dict], None], Depends(get_app_mention)],
+    message: Annotated[Callable[[dict, Any, Any, dict], None], Depends(get_message)],
 ) -> "SlackApp":
     """Create and configure Slack App with agent dependency."""
     try:
@@ -130,6 +201,7 @@ def get_slack_app(
 
     # Register event handlers with lazy listeners
     slack_app.event("app_mention")(ack=ack, lazy=[app_mention])
+    slack_app.event("message")(ack=ack, lazy=[message])
 
     return slack_app
 

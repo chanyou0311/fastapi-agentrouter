@@ -195,9 +195,9 @@ def test_thread_based_session_new_thread():
         user_id=expected_thread_id, session_id="session_123", message="Hello bot!"
     )
 
-    # Verify say was called with thread_ts
+    # Verify say was called with channel and thread_ts
     mock_say.assert_called_once_with(
-        text="Response text", thread_ts="1234567890.123456"
+        text="Response text", channel="C789012", thread_ts="1234567890.123456"
     )
 
 
@@ -242,9 +242,11 @@ def test_thread_based_session_existing_thread():
         message="Follow-up message",
     )
 
-    # Verify say was called with thread_ts
+    # Verify say was called with channel and thread_ts
     mock_say.assert_called_once_with(
-        text="Response from existing session", thread_ts="1234567890.123456"
+        text="Response from existing session",
+        channel="C789012",
+        thread_ts="1234567890.123456",
     )
 
 
