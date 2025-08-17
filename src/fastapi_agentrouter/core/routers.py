@@ -5,8 +5,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter
 
-from ..core.settings import get_settings
 from ..integrations.slack import router as slack_router
+from .settings import get_settings
 
 
 @asynccontextmanager
