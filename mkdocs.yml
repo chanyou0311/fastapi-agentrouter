@@ -6,19 +6,6 @@ repo_name: chanyou0311/fastapi-agentrouter
 
 nav:
   - Home: index.md
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-    - Configuration: getting-started/configuration.md
-  - Integrations:
-    - Slack: integrations/slack.md
-  - API Reference:
-    - Core: api/core.md
-    - Integrations: api/integrations.md
-  - Examples:
-    - Basic Usage: examples/basic.md
-    - Advanced Usage: examples/advanced.md
-  - Contributing: contributing.md
   - Changelog: changelog.md
 
 theme:
