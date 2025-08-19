@@ -1,0 +1,26 @@
+FROM python:3.13.6-slim-bookworm
+
+# Copy uv binary from the official image for fast, reliable dependency installation
+COPY --from=ghcr.io/astral-sh/uv:0.8.4 /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY pyproject.toml uv.lock /app/
+
+# Install dependencies with vertexai extra for Vertex AI support
+# Also install uvicorn which is needed to run the FastAPI application
+RUN uv sync --frozen --no-dev --extra vertexai && \
+    uv pip install uvicorn
+
+# Copy the application code
+COPY src /app/src
+
+# Set Python path to use the virtual environment created by uv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Expose the default FastAPI port
+EXPOSE 8000
+
+# Run the application using the __main__ module
+ENTRYPOINT ["python", "-m", "fastapi_agentrouter"]
