@@ -108,10 +108,10 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-agentrouter
           tags: |
+            type=raw,value=latest
             type=semver,pattern={{version}},value=${{ needs.release-please.outputs.version }}
             type=semver,pattern={{major}}.{{minor}},value=${{ needs.release-please.outputs.version }}
             type=semver,pattern={{major}},value=${{ needs.release-please.outputs.version }}
-            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4 # v5
