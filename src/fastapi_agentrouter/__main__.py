@@ -6,7 +6,7 @@ import fastapi_agentrouter
 app = FastAPI()
 
 app.dependency_overrides[fastapi_agentrouter.get_agent] = (
-    fastapi_agentrouter.get_vertex_ai_agent_engine
+    fastapi_agentrouter.get_vertex_ai_agent
 )
 app.include_router(fastapi_agentrouter.router)
 
