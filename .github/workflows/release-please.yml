@@ -108,9 +108,9 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-agentrouter
           tags: |
-            type=semver,pattern={{version}},value=v${{ needs.release-please.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.release-please.outputs.version }}
-            type=semver,pattern={{major}},value=v${{ needs.release-please.outputs.version }}
+            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release-please.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.release-please.outputs.version }}
             type=raw,value=latest
 
       - name: Build and push Docker image
