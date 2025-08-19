@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.1](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.0...v0.6.1) (2025-08-19)
+
+
+### Bug Fixes
+
+* add semantic versioning tags to Docker image publishing ([#83](https://github.com/chanyou0311/fastapi-agentrouter/issues/83)) ([c9b6924](https://github.com/chanyou0311/fastapi-agentrouter/commit/c9b692461ae7bb754d015af4cf3bbe2645877776))
+* **deps:** update docker/build-push-action digest to ca052bb ([#81](https://github.com/chanyou0311/fastapi-agentrouter/issues/81)) ([900a918](https://github.com/chanyou0311/fastapi-agentrouter/commit/900a9182203523fe7172372cd3629f38b021b0ec))
+* **deps:** update docker/login-action digest to 184bdaa ([#82](https://github.com/chanyou0311/fastapi-agentrouter/issues/82)) ([68acc6f](https://github.com/chanyou0311/fastapi-agentrouter/commit/68acc6f4601112283e27c4d7f901a5f9b7d3f509))
+* **deps:** update docker/metadata-action digest to c1e5197 ([#85](https://github.com/chanyou0311/fastapi-agentrouter/issues/85)) ([4ae2661](https://github.com/chanyou0311/fastapi-agentrouter/commit/4ae26619d44404fcf9ed30f4a14d6f18b52cba1f))
+* **deps:** update docker/setup-buildx-action digest to e468171 ([#86](https://github.com/chanyou0311/fastapi-agentrouter/issues/86)) ([78224a9](https://github.com/chanyou0311/fastapi-agentrouter/commit/78224a9e27c1319bedd918d33207bcfa852e8e48))
+
+
+### Documentation
+
+* Remove outdated documentation files for installation, quickstart, and Slack integration; delete Japanese translations for core API, integrations, contributing, examples, and configuration; eliminate improvement suggestions document. ([#84](https://github.com/chanyou0311/fastapi-agentrouter/issues/84)) ([517ed51](https://github.com/chanyou0311/fastapi-agentrouter/commit/517ed510129104c3a9f3dec2812146fced2fadf7))
+* update README.md to match current implementation ([#87](https://github.com/chanyou0311/fastapi-agentrouter/issues/87)) ([edc4d90](https://github.com/chanyou0311/fastapi-agentrouter/commit/edc4d9011d5362312f041731d08f7bb862eb5d00))
+
 ## [0.6.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.5.0...v0.6.0) (2025-08-19)
 
 
