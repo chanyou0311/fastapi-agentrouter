@@ -1,0 +1,72 @@
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Documentation
+docs/
+mkdocs.yml
+*.md
+!README.md
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
+
+# Development files
+.pre-commit-config.yaml
+renovate.json
+release-please-config.json
+
+# Examples (not needed in production image)
+examples/
+
+# Local environment files
+*.env
+*.env.*
+!*.env.sample
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*~
