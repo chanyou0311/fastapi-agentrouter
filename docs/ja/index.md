@@ -62,7 +62,4 @@ pip install "fastapi-agentrouter[all]"
 
 ## 次のステップ
 
-- [はじめに](getting-started/installation.md) - インストールとセットアップ
-- [クイックスタートガイド](getting-started/quickstart.md) - 最初のエージェント統合
-- [APIリファレンス](api/core.md) - 詳細なAPIドキュメント
-- [サンプル](examples/basic.md) - 完全なサンプルコード
+最新のアップデートとリリースについては[変更履歴](changelog.md)をご覧ください。

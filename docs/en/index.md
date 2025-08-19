@@ -62,7 +62,4 @@ pip install "fastapi-agentrouter[all]"
 
 ## Next Steps
 
-- [Getting Started](getting-started/installation.md) - Installation and setup
-- [Quick Start Guide](getting-started/quickstart.md) - Your first agent integration
-- [API Reference](api/core.md) - Detailed API documentation
-- [Examples](examples/basic.md) - Complete examples
+Check out the [Changelog](changelog.md) for the latest updates and releases.

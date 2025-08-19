@@ -1,3 +1,0 @@
-# Integrations API
-
-Coming soon.
