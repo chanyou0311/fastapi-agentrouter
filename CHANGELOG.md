@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.5.0...v0.6.0) (2025-08-19)
+
+
+### Features
+
+* add Docker support for FastAPI application ([#79](https://github.com/chanyou0311/fastapi-agentrouter/issues/79)) ([e4d0c9b](https://github.com/chanyou0311/fastapi-agentrouter/commit/e4d0c9bee1cc32d43574d0f8309c8865feb636f0))
+* add main entry point for FastAPI application ([#78](https://github.com/chanyou0311/fastapi-agentrouter/issues/78)) ([7de58ab](https://github.com/chanyou0311/fastapi-agentrouter/commit/7de58abbafb60dd4582899e878a5fff839b8b692))
+
+
+### Bug Fixes
+
+* **deps:** update amannn/action-semantic-pull-request digest to 24e6f01 ([#76](https://github.com/chanyou0311/fastapi-agentrouter/issues/76)) ([f927c33](https://github.com/chanyou0311/fastapi-agentrouter/commit/f927c33c93d24aa4762517747db0a2d2311bd85a))
+
 ## [0.5.0](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.4.2...v0.5.0) (2025-08-16)
 
 
