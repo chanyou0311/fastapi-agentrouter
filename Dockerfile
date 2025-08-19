@@ -5,16 +5,12 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.4 /uv /uvx /bin/
 
 WORKDIR /app
 
-# Copy dependency files first for better caching
-COPY pyproject.toml uv.lock /app/
+# Copy the application code
+COPY . /app/
 
 # Install dependencies with vertexai extra for Vertex AI support
 # Also install uvicorn which is needed to run the FastAPI application
-RUN uv sync --frozen --no-dev --extra vertexai && \
-    uv pip install uvicorn
-
-# Copy the application code
-COPY src /app/src
+RUN uv sync --frozen --all-extras
 
 # Set Python path to use the virtual environment created by uv
 ENV PATH="/app/.venv/bin:$PATH"
