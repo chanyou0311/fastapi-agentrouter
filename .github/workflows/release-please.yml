@@ -18,6 +18,7 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Get GitHub App token
         id: app
@@ -107,11 +108,10 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-agentrouter
           tags: |
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}},value=v${{ needs.release-please.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.release-please.outputs.version }}
+            type=semver,pattern={{major}},value=v${{ needs.release-please.outputs.version }}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4 # v5
