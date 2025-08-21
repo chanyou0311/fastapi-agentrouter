@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.2](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.1...v0.6.2) (2025-08-21)
+
+
+### Bug Fixes
+
+* **deps:** update docker/build-push-action action to v6 ([#93](https://github.com/chanyou0311/fastapi-agentrouter/issues/93)) ([d0598a0](https://github.com/chanyou0311/fastapi-agentrouter/commit/d0598a0567d20d87d5d44ad97b64c2deee9fef4e))
+* **deps:** update ghcr.io/astral-sh/uv docker tag to v0.8.12 ([#91](https://github.com/chanyou0311/fastapi-agentrouter/issues/91)) ([8f10c47](https://github.com/chanyou0311/fastapi-agentrouter/commit/8f10c47cc4364e811b60af025c5a74b779c93b16))
+* **deps:** update googleapis/release-please-action digest to c2a5a2b ([#94](https://github.com/chanyou0311/fastapi-agentrouter/issues/94)) ([940fd96](https://github.com/chanyou0311/fastapi-agentrouter/commit/940fd96d9a53fbdfacce526983b2dfd69989ff1a))
+* **deps:** update python docker tag to v3.13.7 ([#92](https://github.com/chanyou0311/fastapi-agentrouter/issues/92)) ([cc1c528](https://github.com/chanyou0311/fastapi-agentrouter/commit/cc1c52883c7975e493736740e43cf49cfaff8a0a))
+
 ## [0.6.1](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.0...v0.6.1) (2025-08-19)
 
 
