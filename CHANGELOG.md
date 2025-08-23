@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.3](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.2...v0.6.3) (2025-08-23)
+
+
+### Bug Fixes
+
+* **deps:** update actions/upload-pages-artifact action to v4 ([#99](https://github.com/chanyou0311/fastapi-agentrouter/issues/99)) ([8dc272c](https://github.com/chanyou0311/fastapi-agentrouter/commit/8dc272c4774a2765b5ce2a7066f360784c2cd4c9))
+* **deps:** update amannn/action-semantic-pull-request digest to 48f2562 ([#98](https://github.com/chanyou0311/fastapi-agentrouter/issues/98)) ([4c0e9e4](https://github.com/chanyou0311/fastapi-agentrouter/commit/4c0e9e49bdc974f3fbf7b221ecc341a8555dedb0))
+* **deps:** update astral-sh/setup-uv digest to 4959332 ([#96](https://github.com/chanyou0311/fastapi-agentrouter/issues/96)) ([984cef2](https://github.com/chanyou0311/fastapi-agentrouter/commit/984cef2cc977ee634d93fe2501fe9d051620144a))
+* **deps:** update ghcr.io/astral-sh/uv docker tag to v0.8.13 ([#97](https://github.com/chanyou0311/fastapi-agentrouter/issues/97)) ([7207c12](https://github.com/chanyou0311/fastapi-agentrouter/commit/7207c1277cfb4c113c475373de15f59575c3a465))
+
 ## [0.6.2](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.1...v0.6.2) (2025-08-21)
 
 
