@@ -1,5 +1,10 @@
 """Vertex AI integration for FastAPI AgentRouter."""
 
-from .dependencies import get_vertex_ai_agent_engine
+from .adapter import VertexAIAgentAdapter, create_vertex_ai_adapter
+from .dependencies import get_vertex_ai_agent
 
-__all__ = ["get_vertex_ai_agent_engine"]
+__all__ = [
+    "VertexAIAgentAdapter",
+    "create_vertex_ai_adapter",
+    "get_vertex_ai_agent",
+]

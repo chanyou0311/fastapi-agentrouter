@@ -14,11 +14,11 @@ async def lifespan(app: APIRouter) -> AsyncIterator[None]:
     """Router lifespan manager with auto-warmup for configured services."""
     settings = get_settings()
 
-    # Auto-warmup Vertex AI engine if configured
+    # Auto-warmup Vertex AI agent if configured
     if settings.is_vertexai_enabled():
-        from ..agents.vertexai.dependencies import get_vertex_ai_agent_engine
+        from ..agents.vertexai.dependencies import get_vertex_ai_agent
 
-        get_vertex_ai_agent_engine()
+        get_vertex_ai_agent()
 
     yield
     # Cleanup on shutdown (if needed in the future)
