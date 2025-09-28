@@ -79,6 +79,13 @@ def get_app_mention(agent: AgentDep) -> Callable[[dict, Any, dict], None]:
             ):
                 full_response_text += event_data["content"]["parts"][0]["text"]
 
+        # Check if response is empty or whitespace-only
+        if not full_response_text.strip():
+            logger.warning(
+                f"Agent returned empty response for thread {thread_id}, using fallback"
+            )
+            full_response_text = "申し訳ございません。応答の生成に失敗しました。"
+
         # Reply in thread
         say(text=full_response_text, channel=channel, thread_ts=thread_ts)
 
@@ -161,6 +168,13 @@ def get_message(agent: AgentDep) -> Callable[[dict, Any, Any, dict], None]:
                 and "text" in event_data["content"]["parts"][0]
             ):
                 full_response_text += event_data["content"]["parts"][0]["text"]
+
+        # Check if response is empty or whitespace-only
+        if not full_response_text.strip():
+            logger.warning(
+                f"Agent returned empty response for thread {thread_id}, using fallback"
+            )
+            full_response_text = "申し訳ございません。応答の生成に失敗しました。"
 
         # Reply in the same thread
         say(text=full_response_text, channel=channel, thread_ts=thread_ts)

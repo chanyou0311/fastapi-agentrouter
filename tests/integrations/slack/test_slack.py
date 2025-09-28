@@ -7,7 +7,10 @@ from fastapi.testclient import TestClient
 
 from fastapi_agentrouter import get_agent, router
 from fastapi_agentrouter.core.settings import Settings, SlackSettings, get_settings
-from fastapi_agentrouter.integrations.slack.dependencies import get_app_mention
+from fastapi_agentrouter.integrations.slack.dependencies import (
+    get_app_mention,
+    get_message,
+)
 
 
 def test_slack_disabled():
@@ -367,4 +370,109 @@ def test_thread_based_session_multiple_messages_same_thread():
     )
     mock_agent.stream_query.assert_any_call(
         user_id=thread_id, session_id="session_same_thread", message="Second message"
+    )
+
+
+def test_app_mention_empty_response():
+    """Test app mention handler with empty response from agent."""
+    mock_agent = Mock()
+    mock_agent.list_sessions = Mock(return_value={"sessions": []})
+    mock_agent.create_session = Mock(return_value={"id": "session_123"})
+    # Agent returns empty response
+    mock_agent.stream_query = Mock(return_value=[])
+
+    app_mention_handler = get_app_mention(mock_agent)
+
+    mock_say = Mock()
+    event = {
+        "user": "U123456",
+        "text": "Hello bot!",
+        "channel": "C789012",
+        "ts": "1234567890.123456",
+    }
+    body = {}
+
+    app_mention_handler(event, mock_say, body)
+
+    # Verify fallback message was used
+    mock_say.assert_called_once_with(
+        text="申し訳ございません。応答の生成に失敗しました。",
+        channel="C789012",
+        thread_ts="1234567890.123456",
+    )
+
+
+def test_message_empty_response():
+    """Test message handler with empty response from agent."""
+    mock_agent = Mock()
+    mock_agent.list_sessions = Mock(return_value={"sessions": []})
+    mock_agent.create_session = Mock(return_value={"id": "session_123"})
+    # Agent returns empty response
+    mock_agent.stream_query = Mock(return_value=[])
+
+    message_handler = get_message(mock_agent)
+
+    mock_say = Mock()
+    mock_client = Mock()
+    # Mock conversation replies to show bot has participated before
+    mock_client.conversations_replies = Mock(
+        return_value={
+            "messages": [{"user": "bot_user_id", "text": "Previous response"}]
+        }
+    )
+
+    event = {
+        "user": "U123456",
+        "text": "Follow-up message",
+        "channel": "C789012",
+        "thread_ts": "1234567890.123456",
+    }
+    body = {"authorizations": [{"user_id": "bot_user_id"}]}
+
+    message_handler(event, mock_say, mock_client, body)
+
+    # Verify fallback message was used
+    mock_say.assert_called_once_with(
+        text="申し訳ございません。応答の生成に失敗しました。",
+        channel="C789012",
+        thread_ts="1234567890.123456",
+    )
+
+
+def test_message_whitespace_only_response():
+    """Test message handler with whitespace-only response from agent."""
+    mock_agent = Mock()
+    mock_agent.list_sessions = Mock(return_value={"sessions": []})
+    mock_agent.create_session = Mock(return_value={"id": "session_123"})
+    # Agent returns whitespace-only response
+    mock_agent.stream_query = Mock(
+        return_value=[{"content": {"parts": [{"text": "   \n\t  "}]}}]
+    )
+
+    message_handler = get_message(mock_agent)
+
+    mock_say = Mock()
+    mock_client = Mock()
+    # Mock conversation replies to show bot has participated before
+    mock_client.conversations_replies = Mock(
+        return_value={
+            "messages": [{"user": "bot_user_id", "text": "Previous response"}]
+        }
+    )
+
+    event = {
+        "user": "U123456",
+        "text": "Follow-up message",
+        "channel": "C789012",
+        "thread_ts": "1234567890.123456",
+    }
+    body = {"authorizations": [{"user_id": "bot_user_id"}]}
+
+    message_handler(event, mock_say, mock_client, body)
+
+    # Verify fallback message was used
+    mock_say.assert_called_once_with(
+        text="申し訳ございません。応答の生成に失敗しました。",
+        channel="C789012",
+        thread_ts="1234567890.123456",
     )
