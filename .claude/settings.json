@@ -1,4 +1,38 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh run:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(.specify/scripts/bash/commit-by-task.sh:*)",
+      "Bash(.specify/scripts/bash/common.sh:*)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:update-agent-context.sh*)",
+      "Bash(sh .specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(sh .specify/scripts/bash/commit-by-task.sh:*)",
+      "Bash(sh .specify/scripts/bash/common.sh:*)",
+      "Bash(sh .specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(sh .specify/scripts/bash/setup-plan.sh:update-agent-context.sh*)",
+      "Bash(bash .specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(bash .specify/scripts/bash/commit-by-task.sh:*)",
+      "Bash(bash .specify/scripts/bash/common.sh:*)",
+      "Bash(bash .specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(bash .specify/scripts/bash/setup-plan.sh:update-agent-context.sh*)",
+      "Bash(zsh .specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(zsh .specify/scripts/bash/commit-by-task.sh:*)",
+      "Bash(zsh .specify/scripts/bash/common.sh:*)",
+      "Bash(zsh .specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(zsh .specify/scripts/bash/setup-plan.sh:update-agent-context.sh*)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
