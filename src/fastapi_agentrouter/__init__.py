@@ -1,6 +1,6 @@
 """FastAPI AgentRouter - AI Agent interface library for FastAPI."""
 
-__version__ = "0.6.3"
+__version__ = "0.6.4"
 
 from .agents.vertexai import get_vertex_ai_agent_engine
 from .core.dependencies import AgentProtocol, get_agent

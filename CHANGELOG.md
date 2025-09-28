@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.4](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.3...v0.6.4) (2025-09-28)
+
+
+### Bug Fixes
+
+* resolve Vertex AI Agent Engine breaking changes ([#108](https://github.com/chanyou0311/fastapi-agentrouter/issues/108)) ([9347863](https://github.com/chanyou0311/fastapi-agentrouter/commit/93478636efbf2fde5379ea60f0750270bfbafd04))
+
+
+### Documentation
+
+* init specify ([#106](https://github.com/chanyou0311/fastapi-agentrouter/issues/106)) ([e50f81f](https://github.com/chanyou0311/fastapi-agentrouter/commit/e50f81f53b0f2960d2aba170546b246a03a4ef04))
+
 ## [0.6.3](https://github.com/chanyou0311/fastapi-agentrouter/compare/v0.6.2...v0.6.3) (2025-09-28)
 
 
