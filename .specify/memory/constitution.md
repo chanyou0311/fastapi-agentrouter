@@ -1,50 +1,119 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+Version: 0.0.0 → 1.0.0 (初期制定)
+新規原則: 5つ（開発者体験重視）
+追加セクション: 開発ワークフロー、AI支援開発
+更新済みファイル:
+- constitution.md ✅
+関連ファイル（要確認）:
+- plan-template.md ⚠️ (Constitution Checkセクションの更新が必要)
+- CLAUDE.md ⚠️ (憲法への参照追加を推奨)
+-->
 
-## Core Principles
+# FastAPI AgentRouter 開発憲法
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## コア原則
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### I. 日本語ファースト開発
+すべてのアーティファクト（設計文書、仕様書、タスク定義、実装計画）は日本語で作成する。エージェントとの対話も日本語を使用する。コード自体は英語を使用するが、内部向けドキュメントは日本語を基本とし、外部公開用ドキュメントは英語と日本語の両方を提供する。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**理由**: 思考と表現の一致により開発速度が向上し、意図の明確な伝達が可能になる。
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. 迅速なイテレーション
+プレビュー版として素早い実装と検証を最優先する。完璧な設計より動作するコードを重視し（Progress over Perfection）、MVPファーストアプローチで段階的に機能を追加していく。大きな変更も恐れずに試行錯誤を繰り返す。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+**理由**: 早期のフィードバック獲得により、方向性の確認と修正が容易になる。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### III. 開発者体験の最適化
+開発環境のセットアップを簡素化し、ツールチェーンを統一する。uvによる依存関係管理、pre-commitフックによる自動品質チェック、ホットリロードとデバッグツールの活用により、開発者が本質的な作業に集中できる環境を提供する。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**理由**: 開発者の認知負荷を下げ、生産性を最大化する。
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### IV. 実験的アプローチの推奨
+新しいアイデアやアーキテクチャの試行を積極的に行う。失敗を恐れず、学習機会として活用する。プレビュー版の特性を活かし、破壊的変更も必要に応じて実施する。ただし、変更の意図と影響は明確に文書化する。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**理由**: イノベーションと学習を促進し、より良いソリューションを発見する。
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+### V. 継続的な知識共有
+コードの変更と同時に学びや発見を文書化する。CLAUDE.mdやREADMEを通じてAIエージェントと人間の開発者の両方に知識を伝承する。成功事例だけでなく、失敗事例とその教訓も記録する。
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+**理由**: チーム全体の学習効率を高め、同じ失敗を繰り返さない。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+## 開発ワークフロー
+
+### 基本的な開発フロー
+1. **アイデアの文書化** - 思いついたアイデアや改善案を日本語でメモする
+2. **プロトタイピング** - 最小限の実装で動作確認
+3. **フィードバック収集** - 内部テストや限定公開で意見を集める
+4. **イテレーション** - フィードバックを基に改善
+5. **知識の記録** - 学んだことをドキュメント化
+
+### 推奨ツールとコマンド
+```bash
+# 環境セットアップ
+uv sync --all-extras --dev
+
+# 開発サーバー起動（ある場合）
+uv run python -m fastapi_agentrouter
+
+# テスト実行（推奨だが必須ではない）
+uv run pytest
+
+# コード品質チェック（コミット前に自動実行）
+uv run pre-commit run --all-files
+
+# ドキュメント確認
+mkdocs serve
+```
+
+### ブランチ戦略
+- `main`: 安定版（といってもプレビュー版）
+- `feature/*`: 新機能の実装
+- `experiment/*`: 実験的な変更
+- `refactor/*`: アーキテクチャの見直し
+
+破壊的変更を含む大規模な実験も推奨。失敗してもロールバックすればよい。
+
+## AI支援開発
+
+### Specify Framework活用
+- `/specify` - 機能仕様の作成
+- `/plan` - 実装計画の策定
+- `/clarify` - 不明点の明確化
+- `/tasks` - タスクの生成
+- `/implement` - 実装の実行
+
+### エージェント連携のベストプラクティス
+1. **コンテキストの明示** - 現在の状況と目的を明確に伝える
+2. **段階的な依頼** - 大きなタスクは小さく分割して依頼
+3. **日本語での対話** - 細かいニュアンスも正確に伝達
+4. **エラーの共有** - 問題発生時は詳細なエラー情報を提供
+5. **学習の記録** - 解決策をCLAUDE.mdに追記
+
+### 知識の永続化
+- `CLAUDE.md`: AI開発ガイド、頻出エラーと解決策
+- `README.md`: プロジェクト概要、使用方法
+- `.specify/memory/`: 仕様や設計の記録
+- コミットメッセージ: 変更の意図を明確に記載
+
+## ガバナンス
+
+### 憲法の位置づけ
+本憲法はプロジェクトのすべての開発活動に対する指針となる。ただし、プレビュー版の性質上、憲法自体も柔軟に改訂可能とする。
+
+### 改訂プロセス
+1. 改訂の必要性を日本語で文書化
+2. 変更案の作成と影響評価
+3. 試行期間を設けて効果を検証
+4. 有効であれば正式に採用
+
+### コンプライアンス
+- PRレビュー時に憲法との整合性を確認
+- ただし、実験的な変更は憲法から逸脱することを許容
+- 逸脱する場合はその理由と期待される効果を明記
+
+### バージョニング
+- MAJOR: 根本的な方針転換
+- MINOR: 新原則の追加や大幅な拡張
+- PATCH: 表現の改善や誤字修正
+
+**Version**: 1.0.0 | **Ratified**: 2025-09-28 | **Last Amended**: 2025-09-28
